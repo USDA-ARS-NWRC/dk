@@ -1,0 +1,81 @@
+#dk_config.txt
+#
+#Input data file
+input-data-file-name=C:\dcg\DK\work\Patrick_Kormos\WY2008\dk_in_wy2008.txt
+#
+#Type of data: 1=precipitation; 2=temperature; 3=swe; 4=other
+type-of-data=2
+#
+#Time step of data: 1=hourly; 2=daily; 3=monthly; 4=yearly
+#This must appear before "timesteps-per-period"
+time-step=1
+#
+#Coordinate system and format: 1=lat-lon column; 2=easting-northing column;
+#3=GRASS grid; 4=ARC/INFO grid
+coord-system=4
+#
+#Elevation grid file
+elevation-grid-file-name=C:\dcg\DK\work\Patrick_Kormos\rcew_dem_10_best_utm83.txt
+#
+#Watershed mask grid (optional)
+watershed-mask-file-name=C:\dcg\DK\work\Patrick_Kormos\rcew_mask_dem_10_best_utm83.txt
+#
+#Zone grid (optional)
+zone-grid-file-name=
+#
+#Output format: 1=mean areal values table; 2=GRASS grid plus 1;
+#3=ARC/INFO grid plus 1; 4=IPW grid plus 1
+#If 2, 3, or 4, must also specify "beginning-period-number"
+#and "ending-period-number"
+output-format=1
+#
+#Sequential period number for beginning of grid output
+beginning-period-number=
+#
+#Sequential period number for end of grid output
+ending-period-number=
+#
+#Grid output precision: 1=floating point with one decimal place;
+#2=integer; 3=integer*10
+output-precision=1
+#
+#Main output file
+output-file-name=C:\dcg\DK\work\Patrick_Kormos\wy2008\test_v48\test4.out
+#
+#Zone output file (optional)
+zone-output-file-name=
+#
+#Regression method: 1=least squares; 2=least absolute deviations
+#(2 is recommended for precipitation)
+regression-method=1
+#
+#Station weighting method: 1=distance (kriging); 2=equal weights
+station-weighting-method=1
+#
+#Timesteps per period for detrending (usually 1)
+timesteps-per-period=1
+#
+#Command-line switch option for OMS-csv input format: if true,
+#csv format is read; if false, standard column input format is read
+input-format-csv=false
+#
+#Command-line switch option for reading kriging weights from
+#file rather than calculating them -- file name given if
+#option desired
+kriging-weights-file-name=C:\dcg\DK\work\Patrick_Kormos\WY2008\test_v48\test1.out
+#
+#Command-line switch options for extra diagnostic output (true/false)
+#-c switch: write input data to output file and quit
+print-input=false
+#-d switch: write distances among stations
+print-distances=false
+#-e switch: write detrending regressions (usually set to true)
+print-regressions=true
+#-r switch: write detrended residuals
+print-residuals=false
+#-w switch: write kriging weights
+print-weights=true
+
+#No longer used
+#grid-output-file-dir=
+
