@@ -413,6 +413,7 @@ int iprintresiduals = 0;
 int iprintweights = 0;
 int i_input_to_output = 0;
 int ioutputdir = 0;
+int nthreads = 1;
 int use_config_file = 0;
 int ikwfile = 0;
 char config_filename[150];
@@ -470,6 +471,16 @@ char *argv[];
 				iprintweights = 1;
 			else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "/c") == 0)
 				i_input_to_output = 1;
+			else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "/t") == 0) {
+				if (sscanf (argv[i+1], "%i", &nthreads) !=1 ) {
+					printf ("ERROR - t option not an integer\n");
+					exit(0);
+				}
+				if (nthreads > omp_get_max_threads()){
+					nthreads = omp_get_max_threads();
+					printf("WARNING - maximum number of threads is %i, using %i\n", omp_get_max_threads(), nthreads);
+				}
+			}
 			else if (strcmp(argv[i], "-k") == 0 || strcmp(argv[i], "/k") == 0) {
 				use_config_file = 1;
 				strcpy(config_filename, argv[i+1]);
@@ -738,19 +749,13 @@ printf("\nMAP for period %d year %d = %8.4f\n", j+1, year[k], map[j][k]);
 			}
 
 			/* Calculate kriging weights using all stations */
-//			int thread_id;
 			omp_set_dynamic(0);     // Explicitly disable dynamic teams
-			omp_set_num_threads(2); // Use N threads for all consecutive parallel regions
+			omp_set_num_threads(nthreads); // Use N threads for all consecutive parallel regions
 
-			// shared(nsta, a, ad, dgrid, elevations, ngrid, grid)
 			#pragma omp parallel shared(nsta, ad, dgrid, elevations, grid) private(i, j, w)
 			{
 				#pragma omp for
 				for (i = 0; i < ngrid; i++) {
-
-//					thread_id = omp_get_thread_num();
-
-//					printf("Thread %d at %d pixel\n",thread_id, i );
 
 					if (grid[i].use == 1) {
 
@@ -759,11 +764,8 @@ printf("\nMAP for period %d year %d = %8.4f\n", j+1, year[k], map[j][k]);
 						#pragma omp critical
 						{
 						for (j = 0; j < nsta; j++){
-//							#pragma omp atomic
 							wall[i][j] = (float) w[j];
-//							printf("%9.4f ", w[j]);
 						}
-//						printf("\n\n");
 						}
 					}
 				}
