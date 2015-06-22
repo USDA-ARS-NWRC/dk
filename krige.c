@@ -15,16 +15,16 @@
 
 #include "dk_x.h"
 
-void krige(l, ns, a, ad, dgrid)
+void krige(l, ns, a, ad, dgrid, elevations)
 int l;                           /* grid index */
 int ns;                          /* number of stations used */
-//int *staflg;                      /* station use flags */
 double **a;                      /* data matrix for solving for kriging
                                     weights (input to m_inv()) */
 float **ad;                      /* matrix of distances between prec/temp
                                     stations for computing kriging weights */
 float **dgrid;                   /* matrix of distances between grid cells
                                     and prec/temp stations */
+int *elevations;				 /* vector of station elevations */
 {
    float elevsave;               /* stored value of station elevation */
    int m, mm, n, nn;             /* loop indexes */
@@ -113,9 +113,9 @@ fprintf(fpout, "\n\n");
          if (staflg[m] == 1) {
             mm++;
             if (wcalc[mm] < 0.0) {
-               if (sta[m].elev > elevsave) {
+               if (elevations[m] > elevsave) {
                   msave = m;
-                  elevsave = sta[m].elev;
+                  elevsave = elevations[m];
                }
             }
          }

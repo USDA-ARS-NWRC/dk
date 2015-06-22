@@ -220,6 +220,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <omp.h>
 
 #include "dk_m.h"                /* program header with array dimensions */
 
@@ -265,6 +266,7 @@ float dum;                       /* intermediate calculation variable */
 double *dvector();               /* double vector space allocation function */
 int dy_end;                      /* ending day of OMS-csv input file */
 int dy_start;                    /* starting day of OMS-csv input file */
+float *elevations;				 /* vector of elevation for each station */
 double exp();                    /* exponential function */
 int *firstday;                   /* vector of first day (period) of data for each year */
 FILE *fopen();                   /* file open function */
@@ -583,6 +585,7 @@ for (i = 0; i < ngrid; i++) {
 		b1 = matrix(nper, nyear);
 	}
 	dgrid = matrix(ngrid, nsta);
+	elevations = vector(nsta);
 	gprec = vector(ngrid);
 	map = matrix(mtper, nyear);
 //	staflg = ivector(nsta);
@@ -687,6 +690,7 @@ printf("\nMAP for period %d year %d = %8.4f\n", j+1, year[k], map[j][k]);
 
 			for (i = 0; i < nsta; i++) {
 				ad[i][i] = 0;
+				elevations[i] = sta[i].elev;
 				for (j = i+1; j < nsta; j++) {
 					if (icoord == 1)
 						ad[i][j] = ad[j][i] = dist_ll(sta[i].north, sta[i].east,
@@ -737,13 +741,9 @@ printf("\nMAP for period %d year %d = %8.4f\n", j+1, year[k], map[j][k]);
 
 			for (i = 0; i < ngrid; i++) {
 				if (grid[i].use == 1) {
-//					for (m = 0; m < nsta; m++)
-//						staflg[m] = 1;
-					/* printf("\n   Kriging weights for grid cell %d ...\n", i); */
-
 					/* Create a structure to pass to krige with pointers to all the goodness */
 
-					krige(i, nsta, a, ad, dgrid, sta);
+					krige(i, nsta, a, ad, dgrid, elevations);
 					for (j = 0; j < nsta; j++)
 						wall[i][j] = (float) w[j];
 				}
