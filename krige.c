@@ -15,15 +15,32 @@
 
 #include "dk_x.h"
 
-void krige(l, ns)
+void krige(l, ns, a, ad, dgrid)
 int l;                           /* grid index */
 int ns;                          /* number of stations used */
+//int *staflg;                      /* station use flags */
+double **a;                      /* data matrix for solving for kriging
+                                    weights (input to m_inv()) */
+float **ad;                      /* matrix of distances between prec/temp
+                                    stations for computing kriging weights */
+float **dgrid;                   /* matrix of distances between grid cells
+                                    and prec/temp stations */
 {
    float elevsave;               /* stored value of station elevation */
    int m, mm, n, nn;             /* loop indexes */
    int msave;                    /* stored value of m index */
    int nsp1;                     /* ns plus 1 */
    double *wcalc;                /* calculation vector for weights */
+   int nsta;					 /* number of stations */
+   int luret;                    /* return value from lusolv() */
+   int *staflg;				 	 /* station use flags*/
+
+   nsta = ns;
+
+   // set station use flags
+   staflg = ivector(nsta);
+   for (m = 0; m < nsta; m++)
+	   staflg[m] = 1;
 
    wcalc = dvector(nsta+1);
    while (1) {
@@ -62,21 +79,21 @@ for (mm = 0; mm < n; mm++) {
    End debug */
 
       /* Solve linear system for kriging weights */
-   
+
       if ((luret = lusolv(n, a, wcalc)) != 0) {
-         if (icoord == 1)
-            fprintf(fpout, "\n\n%s\n%s%d%s%5.2f%s%6.2f%s%6.0f\n\n%s\n",
-                    "Indeterminate linear system ... ",
-                     "   Grid cell ", l+1, ":  lat ", grid[l].north,
-                     "   long ", grid[l].east, "   elev ", grid[l].elev*1000,
-                     "Program terminating ...");
-         else
-            fprintf(fpout, "\n\n%s\n%s%d%s%10.2f%s%10.2f%s%6.0f\n\n%s\n",
-                    "Indeterminate linear system ... ",
-                     "   Grid cell ", l+1, ":  northing ", grid[l].north,
-                     "   easting ", grid[l].east, "   elev ", grid[l].elev*1000,
-                     "Program terminating ...");
-         exit(0);
+//         if (icoord == 1)
+//            fprintf(fpout, "\n\n%s\n%s%d%s%5.2f%s%6.2f%s%6.0f\n\n%s\n",
+//                    "Indeterminate linear system ... ",
+//                     "   Grid cell ", l+1, ":  lat ", grid[l].north,
+//                     "   long ", grid[l].east, "   elev ", grid[l].elev*1000,
+//                     "Program terminating ...");
+//         else
+//            fprintf(fpout, "\n\n%s\n%s%d%s%10.2f%s%10.2f%s%6.0f\n\n%s\n",
+//                    "Indeterminate linear system ... ",
+//                     "   Grid cell ", l+1, ":  northing ", grid[l].north,
+//                     "   easting ", grid[l].east, "   elev ", grid[l].elev*1000,
+//                     "Program terminating ...");
+//         exit(0);
       }
 /* Debug
 fprintf(fpout, "\n\n%s %d, %s %d, %s %d:\n",

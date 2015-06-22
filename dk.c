@@ -369,14 +369,14 @@ int ret;                         /* function return code */
 double se;                       /* standard error */
 float **snolin;                  /* snowline */
 int sreg();                      /* simple linear regression function */
-struct {
+struct stations {
 	char id[26];                  /* station identifier */
 	float elev;                   /* elevation (thousands) */
 	float east;                   /* easting (or longitude) of station */
 	float north;                  /* northing (or latitude) of station */
 	float **data;                 /* data matrix */
 } sta[MSTA];
-int *staflg;                     /* station use flags */
+//int *staflg;                     /* station use flags */
 struct {
 	int dstart;                   /* index of starting day of storm */
 	int ystart;                   /* index of starting year of storm */
@@ -585,7 +585,7 @@ for (i = 0; i < ngrid; i++) {
 	dgrid = matrix(ngrid, nsta);
 	gprec = vector(ngrid);
 	map = matrix(mtper, nyear);
-	staflg = ivector(nsta);
+//	staflg = ivector(nsta);
 	w = dvector(nstap1);
 	wall = matrix(ngrid, nsta);
 	x = dvector(nsta);
@@ -737,10 +737,13 @@ printf("\nMAP for period %d year %d = %8.4f\n", j+1, year[k], map[j][k]);
 
 			for (i = 0; i < ngrid; i++) {
 				if (grid[i].use == 1) {
-					for (m = 0; m < nsta; m++)
-						staflg[m] = 1;
+//					for (m = 0; m < nsta; m++)
+//						staflg[m] = 1;
 					/* printf("\n   Kriging weights for grid cell %d ...\n", i); */
-					krige(i, nsta);
+
+					/* Create a structure to pass to krige with pointers to all the goodness */
+
+					krige(i, nsta, a, ad, dgrid, sta);
 					for (j = 0; j < nsta; j++)
 						wall[i][j] = (float) w[j];
 				}

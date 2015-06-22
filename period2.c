@@ -14,6 +14,12 @@ void period2()
 {
    int i, j, jj, k, l, m, n;  /* loop indexes */
    int ns;                    /* number of stations with data */
+   int *staflg;				 	 /* station use flags*/
+
+   // set station use flags
+   staflg = ivector(nsta);
+   for (m = 0; m < nsta; m++)
+	   staflg[m] = 1;
 
    /* Year loop */
 
