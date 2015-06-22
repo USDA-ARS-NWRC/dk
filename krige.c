@@ -15,11 +15,9 @@
 
 #include "dk_x.h"
 
-double *krige(l, ns, a, ad, dgrid, elevations)
+double *krige(l, ns, ad, dgrid, elevations)
 int l;                           /* grid index */
 int ns;                          /* number of stations used */
-double **a;                      /* data matrix for solving for kriging
-                                    weights (input to m_inv()) */
 float **ad;                      /* matrix of distances between prec/temp
                                     stations for computing kriging weights */
 float **dgrid;                   /* matrix of distances between grid cells
@@ -34,6 +32,9 @@ int *elevations;				 /* vector of station elevations */
    int nsta;					 /* number of stations */
    int luret;                    /* return value from lusolv() */
    int *staflg;				 	 /* station use flags*/
+   double **a;                   /* data matrix for solving for kriging
+                                       weights (input to m_inv()) */
+   double *w;                    /* kriging weights */
 
    nsta = ns;
 
@@ -41,6 +42,9 @@ int *elevations;				 /* vector of station elevations */
    staflg = ivector(nsta);
    for (m = 0; m < nsta; m++)
 	   staflg[m] = 1;
+
+   a = dmatrix(nsta+1, nsta+2);
+   w = dvector(nsta+1);
 
    wcalc = dvector(nsta+1);
    while (1) {

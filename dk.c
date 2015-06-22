@@ -573,7 +573,7 @@ for (i = 0; i < ngrid; i++) {
 	/* Allocate array space */
 
 	nstap1 = nsta + 1;
-	a = dmatrix(nstap1, nsta+2);
+//	a = dmatrix(nstap1, nsta+2);
 	ad = matrix(nsta, nsta);
 	adata = vector(nsta);
 	if (istorm == 1) {
@@ -588,8 +588,8 @@ for (i = 0; i < ngrid; i++) {
 	elevations = vector(nsta);
 	gprec = vector(ngrid);
 	map = matrix(mtper, nyear);
-//	staflg = ivector(nsta);
-	w = dvector(nstap1);
+	//	staflg = ivector(nsta);
+//	w = dvector(nstap1);
 	wall = matrix(ngrid, nsta);
 	x = dvector(nsta);
 	y = dvector(nsta);
@@ -738,14 +738,34 @@ printf("\nMAP for period %d year %d = %8.4f\n", j+1, year[k], map[j][k]);
 			}
 
 			/* Calculate kriging weights using all stations */
+//			int thread_id;
+			omp_set_dynamic(0);     // Explicitly disable dynamic teams
+			omp_set_num_threads(2); // Use N threads for all consecutive parallel regions
 
-			for (i = 0; i < ngrid; i++) {
-				if (grid[i].use == 1) {
+			// shared(nsta, a, ad, dgrid, elevations, ngrid, grid)
+			#pragma omp parallel shared(nsta, ad, dgrid, elevations, grid) private(i, j, w)
+			{
+				#pragma omp for
+				for (i = 0; i < ngrid; i++) {
 
-					w = krige(i, nsta, a, ad, dgrid, elevations);
+//					thread_id = omp_get_thread_num();
 
-					for (j = 0; j < nsta; j++)
-						wall[i][j] = (float) w[j];
+//					printf("Thread %d at %d pixel\n",thread_id, i );
+
+					if (grid[i].use == 1) {
+
+						w = krige(i, nsta, ad, dgrid, elevations);
+
+						#pragma omp critical
+						{
+						for (j = 0; j < nsta; j++){
+//							#pragma omp atomic
+							wall[i][j] = (float) w[j];
+//							printf("%9.4f ", w[j]);
+						}
+//						printf("\n\n");
+						}
+					}
 				}
 			}
 		}
