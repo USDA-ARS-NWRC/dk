@@ -103,7 +103,7 @@ extern int izero;                /* flag indicating a day where all stations
                                     have zero precipitation (izero = 1) */
 extern int izone;                /* flag indicating if zones (such as hydrologic 
                                     response units) are to be defined */
-extern void krige();             /* kriging function */
+extern double *krige();             /* kriging function */
 extern int *lastday;             /* vector of last day (period) of data for each year */
 extern int len;                  /* string length */
 extern char line[501];           /* input line buffer */

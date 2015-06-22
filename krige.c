@@ -15,7 +15,7 @@
 
 #include "dk_x.h"
 
-void krige(l, ns, a, ad, dgrid, elevations)
+double *krige(l, ns, a, ad, dgrid, elevations)
 int l;                           /* grid index */
 int ns;                          /* number of stations used */
 double **a;                      /* data matrix for solving for kriging
@@ -138,5 +138,7 @@ fprintf(fpout, "\n\n");
       }
    }
    free(wcalc);
+
+   return w;
 }
 

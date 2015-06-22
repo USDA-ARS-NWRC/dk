@@ -332,7 +332,7 @@ int izero;                       /* flag indicating a day where all stations
                                     have zero precipitation (izero = 1) */
 int izone;                       /* flag indicating if zones (such as hydrologic 
                                     response units) are to be defined */
-void krige();                    /* kriging function */
+double *krige();                    /* kriging function */
 int *lastday;                    /* vector of last day (period) of data for each year */
 int len;                         /* string length */
 char line[501];                  /* input line buffer */
@@ -741,9 +741,9 @@ printf("\nMAP for period %d year %d = %8.4f\n", j+1, year[k], map[j][k]);
 
 			for (i = 0; i < ngrid; i++) {
 				if (grid[i].use == 1) {
-					/* Create a structure to pass to krige with pointers to all the goodness */
 
-					krige(i, nsta, a, ad, dgrid, elevations);
+					w = krige(i, nsta, a, ad, dgrid, elevations);
+
 					for (j = 0; j < nsta; j++)
 						wall[i][j] = (float) w[j];
 				}
