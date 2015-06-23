@@ -761,12 +761,12 @@ printf("\nMAP for period %d year %d = %8.4f\n", j+1, year[k], map[j][k]);
 
 						w = krige(i, nsta, ad, dgrid, elevations);
 
-						#pragma omp critical
-						{
+//						#pragma omp critical
+//						{
 						for (j = 0; j < nsta; j++){
 							wall[i][j] = (float) w[j];
 						}
-						}
+//						}
 					}
 				}
 			}
