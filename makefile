@@ -1,4 +1,4 @@
-ADDL_OPTIONS=-Wall
+ADDL_OPTIONS=-Wall -fopenmp
 
 
 dk : dk.o arcout.o array.o caldate.o dist.o getln.o\

@@ -220,6 +220,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <omp.h>
 
 #include "dk_m.h"                /* program header with array dimensions */
 
@@ -265,6 +266,7 @@ float dum;                       /* intermediate calculation variable */
 double *dvector();               /* double vector space allocation function */
 int dy_end;                      /* ending day of OMS-csv input file */
 int dy_start;                    /* starting day of OMS-csv input file */
+float *elevations;				 /* vector of elevation for each station */
 double exp();                    /* exponential function */
 int *firstday;                   /* vector of first day (period) of data for each year */
 FILE *fopen();                   /* file open function */
@@ -330,7 +332,7 @@ int izero;                       /* flag indicating a day where all stations
                                     have zero precipitation (izero = 1) */
 int izone;                       /* flag indicating if zones (such as hydrologic 
                                     response units) are to be defined */
-void krige();                    /* kriging function */
+double *krige();                    /* kriging function */
 int *lastday;                    /* vector of last day (period) of data for each year */
 int len;                         /* string length */
 char line[501];                  /* input line buffer */
@@ -369,14 +371,14 @@ int ret;                         /* function return code */
 double se;                       /* standard error */
 float **snolin;                  /* snowline */
 int sreg();                      /* simple linear regression function */
-struct {
+struct stations {
 	char id[26];                  /* station identifier */
 	float elev;                   /* elevation (thousands) */
 	float east;                   /* easting (or longitude) of station */
 	float north;                  /* northing (or latitude) of station */
 	float **data;                 /* data matrix */
 } sta[MSTA];
-int *staflg;                     /* station use flags */
+//int *staflg;                     /* station use flags */
 struct {
 	int dstart;                   /* index of starting day of storm */
 	int ystart;                   /* index of starting year of storm */
@@ -411,6 +413,7 @@ int iprintresiduals = 0;
 int iprintweights = 0;
 int i_input_to_output = 0;
 int ioutputdir = 0;
+int nthreads = 1;
 int use_config_file = 0;
 int ikwfile = 0;
 char config_filename[150];
@@ -468,6 +471,16 @@ char *argv[];
 				iprintweights = 1;
 			else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "/c") == 0)
 				i_input_to_output = 1;
+			else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "/t") == 0) {
+				if (sscanf (argv[i+1], "%i", &nthreads) !=1 ) {
+					printf ("ERROR - t option not an integer\n");
+					exit(0);
+				}
+				if (nthreads > omp_get_max_threads()){
+					nthreads = omp_get_max_threads();
+					printf("WARNING - maximum number of threads is %i, using %i\n", omp_get_max_threads(), nthreads);
+				}
+			}
 			else if (strcmp(argv[i], "-k") == 0 || strcmp(argv[i], "/k") == 0) {
 				use_config_file = 1;
 				strcpy(config_filename, argv[i+1]);
@@ -571,7 +584,7 @@ for (i = 0; i < ngrid; i++) {
 	/* Allocate array space */
 
 	nstap1 = nsta + 1;
-	a = dmatrix(nstap1, nsta+2);
+//	a = dmatrix(nstap1, nsta+2);
 	ad = matrix(nsta, nsta);
 	adata = vector(nsta);
 	if (istorm == 1) {
@@ -583,10 +596,11 @@ for (i = 0; i < ngrid; i++) {
 		b1 = matrix(nper, nyear);
 	}
 	dgrid = matrix(ngrid, nsta);
+	elevations = vector(nsta);
 	gprec = vector(ngrid);
 	map = matrix(mtper, nyear);
-	staflg = ivector(nsta);
-	w = dvector(nstap1);
+	//	staflg = ivector(nsta);
+//	w = dvector(nstap1);
 	wall = matrix(ngrid, nsta);
 	x = dvector(nsta);
 	y = dvector(nsta);
@@ -687,6 +701,7 @@ printf("\nMAP for period %d year %d = %8.4f\n", j+1, year[k], map[j][k]);
 
 			for (i = 0; i < nsta; i++) {
 				ad[i][i] = 0;
+				elevations[i] = sta[i].elev;
 				for (j = i+1; j < nsta; j++) {
 					if (icoord == 1)
 						ad[i][j] = ad[j][i] = dist_ll(sta[i].north, sta[i].east,
@@ -734,15 +749,25 @@ printf("\nMAP for period %d year %d = %8.4f\n", j+1, year[k], map[j][k]);
 			}
 
 			/* Calculate kriging weights using all stations */
+			omp_set_dynamic(0);     // Explicitly disable dynamic teams
+			omp_set_num_threads(nthreads); // Use N threads for all consecutive parallel regions
 
-			for (i = 0; i < ngrid; i++) {
-				if (grid[i].use == 1) {
-					for (m = 0; m < nsta; m++)
-						staflg[m] = 1;
-					/* printf("\n   Kriging weights for grid cell %d ...\n", i); */
-					krige(i, nsta);
-					for (j = 0; j < nsta; j++)
-						wall[i][j] = (float) w[j];
+			#pragma omp parallel shared(nsta, ad, dgrid, elevations, grid) private(i, j, w)
+			{
+				#pragma omp for
+				for (i = 0; i < ngrid; i++) {
+
+					if (grid[i].use == 1) {
+
+						w = krige(i, nsta, ad, dgrid, elevations);
+
+//						#pragma omp critical
+//						{
+						for (j = 0; j < nsta; j++){
+							wall[i][j] = (float) w[j];
+						}
+//						}
+					}
 				}
 			}
 		}

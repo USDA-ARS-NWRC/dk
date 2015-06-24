@@ -15,15 +15,36 @@
 
 #include "dk_x.h"
 
-void krige(l, ns)
+double *krige(l, ns, ad, dgrid, elevations)
 int l;                           /* grid index */
 int ns;                          /* number of stations used */
+float **ad;                      /* matrix of distances between prec/temp
+                                    stations for computing kriging weights */
+float **dgrid;                   /* matrix of distances between grid cells
+                                    and prec/temp stations */
+int *elevations;				 /* vector of station elevations */
 {
    float elevsave;               /* stored value of station elevation */
    int m, mm, n, nn;             /* loop indexes */
    int msave;                    /* stored value of m index */
    int nsp1;                     /* ns plus 1 */
    double *wcalc;                /* calculation vector for weights */
+   int nsta;					 /* number of stations */
+   int luret;                    /* return value from lusolv() */
+   int *staflg;				 	 /* station use flags*/
+   double **a;                   /* data matrix for solving for kriging
+                                       weights (input to m_inv()) */
+   double *w;                    /* kriging weights */
+
+   nsta = ns;
+
+   // set station use flags
+   staflg = ivector(nsta);
+   for (m = 0; m < nsta; m++)
+	   staflg[m] = 1;
+
+   a = dmatrix(nsta+1, nsta+2);
+   w = dvector(nsta+1);
 
    wcalc = dvector(nsta+1);
    while (1) {
@@ -62,21 +83,21 @@ for (mm = 0; mm < n; mm++) {
    End debug */
 
       /* Solve linear system for kriging weights */
-   
+
       if ((luret = lusolv(n, a, wcalc)) != 0) {
-         if (icoord == 1)
-            fprintf(fpout, "\n\n%s\n%s%d%s%5.2f%s%6.2f%s%6.0f\n\n%s\n",
-                    "Indeterminate linear system ... ",
-                     "   Grid cell ", l+1, ":  lat ", grid[l].north,
-                     "   long ", grid[l].east, "   elev ", grid[l].elev*1000,
-                     "Program terminating ...");
-         else
-            fprintf(fpout, "\n\n%s\n%s%d%s%10.2f%s%10.2f%s%6.0f\n\n%s\n",
-                    "Indeterminate linear system ... ",
-                     "   Grid cell ", l+1, ":  northing ", grid[l].north,
-                     "   easting ", grid[l].east, "   elev ", grid[l].elev*1000,
-                     "Program terminating ...");
-         exit(0);
+//         if (icoord == 1)
+//            fprintf(fpout, "\n\n%s\n%s%d%s%5.2f%s%6.2f%s%6.0f\n\n%s\n",
+//                    "Indeterminate linear system ... ",
+//                     "   Grid cell ", l+1, ":  lat ", grid[l].north,
+//                     "   long ", grid[l].east, "   elev ", grid[l].elev*1000,
+//                     "Program terminating ...");
+//         else
+//            fprintf(fpout, "\n\n%s\n%s%d%s%10.2f%s%10.2f%s%6.0f\n\n%s\n",
+//                    "Indeterminate linear system ... ",
+//                     "   Grid cell ", l+1, ":  northing ", grid[l].north,
+//                     "   easting ", grid[l].east, "   elev ", grid[l].elev*1000,
+//                     "Program terminating ...");
+//         exit(0);
       }
 /* Debug
 fprintf(fpout, "\n\n%s %d, %s %d, %s %d:\n",
@@ -96,9 +117,9 @@ fprintf(fpout, "\n\n");
          if (staflg[m] == 1) {
             mm++;
             if (wcalc[mm] < 0.0) {
-               if (sta[m].elev > elevsave) {
+               if (elevations[m] > elevsave) {
                   msave = m;
-                  elevsave = sta[m].elev;
+                  elevsave = elevations[m];
                }
             }
          }
@@ -121,5 +142,7 @@ fprintf(fpout, "\n\n");
       }
    }
    free(wcalc);
+
+   return w;
 }
 

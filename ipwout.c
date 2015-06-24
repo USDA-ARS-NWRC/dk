@@ -153,17 +153,14 @@ int ip;                          /* period (sequential number beginning Oct 1) *
 
    fprintf(fpipw, "!<header> lq 0\nunits = ");
    if (type == 1 || type == 3)
-      fprintf(fpipw, "mm\nmap = 0 %6.1f\nmap = 255 %6.1f\n", min, max);
+      fprintf(fpipw, "mm\nmap = 0 %7.2f\nmap = 255 %7.2f\n", min, max);
    else if (type == 2)
-      fprintf(fpipw, "C\nmap = 0 %5.1f\nmap = 255 %5.1f\n", min, max);
+      fprintf(fpipw, "C\nmap = 0 %6.2f\nmap = 255 %6.2f\n", min, max);
    else
-      fprintf(fpipw, "unknown\nmap = 0 %5.1f\nmap = 255 %5.1f\n", min, max);
+      fprintf(fpipw, "unknown\nmap = 0 %6.2f\nmap = 255 %6.2f\n", min, max);
 
    /* Image header and CNTL-L to separate header from data */
-
-   fprintf(fpipw, "!<header> image -1\n");
-
-   /* Write grid values */
+   fprintf(fpipw, "!<header> image -1
 
    for (i = 0; i < ngrid; i++) {
       ival = (int) ((gprec[i] - min) * delta + 0.5);
