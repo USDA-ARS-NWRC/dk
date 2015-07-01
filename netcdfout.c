@@ -13,10 +13,10 @@
 #include <time.h>
 
 /* This is the name of the data file we will create. */
-#define DK_TITLE "Created with DK tool"
+#define DK_TITLE "Created with DK 4.8 tool"
 #define VAR_NAME "variable"
 
-/* We are writing 3D data, a 6 x 12 grid. */
+/* We are writing 3D data */
 #define NDIMS 3
 
 /* Handle errors by printing an error message and exiting with a
@@ -38,7 +38,7 @@ int ny;								/* number of values in y index */
 	int dimids[NDIMS];
 
 	/* indexing and error handling. */
-	int i, j, temp, retval;
+	int retval;
 
 	/* File Name */
 	char file_name[20];
@@ -46,7 +46,7 @@ int ny;								/* number of values in y index */
 
 	/* location to put the data */
 	size_t start[] = {ip, 0, 0};
-	size_t count[] = {1, nx, ny};
+	size_t count[] = {1, ny, nx};
 
 
 	/* data size */
