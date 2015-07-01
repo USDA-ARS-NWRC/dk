@@ -94,7 +94,9 @@ void period2()
 										else
 											staflg[i] = 0;
 									}
-									krige(l, ns);
+//									krige(l, ns);
+									w = krige(l, nsta, ad, dgrid, elevations);
+
 									/* Debug
 fprintf(fpout, "\nRevised weights:  Grid point %d, Year %d, Period %d\n",
         l+1, year[k], m+1);
