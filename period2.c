@@ -151,6 +151,11 @@ fprintf(fpout, "\n");
 						if (iout == 4 && j >= igridout1 && j <= igridout2)
 							ipwout(year[k], j);
 
+						/* If requested, write out grid in NETCDF format */
+
+						if (iout == 5 && j >= igridout1 && j <= igridout2)
+							netcdfout(year[k], j, gprec, arc.cols, arc.rows);
+
 						/* If requested, compute and write out zonal means for day */
 
 						if (izone == 1)

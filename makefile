@@ -1,14 +1,15 @@
 ADDL_OPTIONS=-Wall -fopenmp
-
+NETCDF_INC=-I/opt/local/include -DNDEBUG 
+NETCDF_LIBS=-L/opt/local/lib -lnetcdf
 
 dk : dk.o arcout.o array.o caldate.o dist.o getln.o\
      grassout.o index.o interp.o ipwout.o isleap.o krige.o lusolv.o\
-     medfit.o period1.o period2.o readcnfg.o readcsv.o readdata.o\
+     medfit.o netcdfout.o period1.o period2.o readcnfg.o readcsv.o readdata.o\
      readgrid.o sca_grid.o sreg.o storm1.o storm2.o\
      swe1.o swe2.o wyjdate.o zoneout.o
-	gcc  -o dk $(ADDL_OPTIONS) dk.o arcout.o array.o caldate.o \
+	gcc  -o dk $(ADDL_OPTIONS) $(NETCDF_INC) $(NETCDF_LIBS) dk.o arcout.o array.o caldate.o \
 	dist.o getln.o grassout.o index.o interp.o ipwout.o \
-	isleap.o krige.o lusolv.o medfit.o period1.o period2.o readcnfg.o \
+	isleap.o krige.o lusolv.o medfit.o netcdfout.o period1.o period2.o readcnfg.o \
 	readcsv.o readdata.o readgrid.o sca_grid.o sreg.o storm1.o \
 	storm2.o swe1.o swe2.o wyjdate.o zoneout.o  -lm
 
@@ -53,6 +54,10 @@ lusolv.o : lusolv.c
 
 medfit.o : medfit.c
 	gcc -c $(ADDL_OPTIONS) medfit.c
+	
+netcdfout.o : netcdfout.c
+	gcc -c $(ADDL_OPTIONS) $(NETCDF_INC) $(NETCDF_LIBS) netcdfout.c
+#	gcc -c $(ADDL_OPTIONS) `nc-config --cflags` netcdfout.c `nc-config --libs`
 
 period1.o : period1.c dk_m.h dk_x.h
 	gcc -c $(ADDL_OPTIONS) period1.c
