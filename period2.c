@@ -53,6 +53,10 @@ void period2()
 				nstop = dppl;
 			jj = dpp * m + firstday[k] - 1;
 
+			/* create an array of empty zeros*/
+			for (l = 0; l < ngrid; l++)
+					gprec[l] = 0;
+
 			/* Process all days that have valid detrending coefficients */
 
 			if (b0[m][k] <= 99998 && b1[m][k] <= 99998) {
@@ -123,7 +127,7 @@ fprintf(fpout, "\n");
 								}
 
 
-								gprec[l] = 0;
+//								gprec[l] = 0;
 								/* KRIGING - Calculate detrended values at grid cell */
 								if (imiss == 1) {
 									for (i = 0; i < nsta; i++)
@@ -201,12 +205,6 @@ fprintf(fpout, "\n");
 							map[j][k] = dum / ngriduse;
 						else
 							map[j][k] = dum / nmask;
-					}
-					else if (iout == 5) {
-						/* no data to calculate, create a zero image mainly to fill precip */
-						for (l = 0; l < ngrid; l++)
-							if (grid[l].use == 1)
-								gprec[l] = 0;
 					}
 					else {
 
