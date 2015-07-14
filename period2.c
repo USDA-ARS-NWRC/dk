@@ -10,11 +10,16 @@
 
 #include "dk_x.h"
 
+int netcdf_create();
+int netcdf_write();
+int netcdf_close();
+
 void period2()
 {
 	int i, j, jj, k, l, m, n;  /* loop indexes */
 	int ns;                    /* number of stations with data */
 	int *staflg;				 	 /* station use flags*/
+	int *ncid;		/* file id for netcdf file */
 
 	// set station use flags
 	staflg = ivector(nsta);
@@ -29,6 +34,10 @@ void period2()
 		nperm1 = nper - 1;
 		dppl = n - dpp * nperm1;
 		nstop = dpp;
+
+		/* Create the netcdf file if wanted */
+		if (iout == 5)
+			netcdf_create(year[k], &grid, arc.cols, arc.rows, &ncid);
 
 		/* Period loop */
 
@@ -176,11 +185,6 @@ fprintf(fpout, "\n");
 						if (iout == 4 && j >= igridout1 && j <= igridout2)
 							ipwout(year[k], j);
 
-						/* If requested, write out grid in NETCDF format */
-
-						if (iout == 5 && j >= igridout1 && j <= igridout2)
-							netcdfout(year[k], j, gprec, arc.cols, arc.rows);
-
 						/* If requested, compute and write out zonal means for day */
 
 						if (izone == 1)
@@ -193,6 +197,12 @@ fprintf(fpout, "\n");
 						else
 							map[j][k] = dum / nmask;
 					}
+					else if (iout == 5) {
+						/* no data to calculate, create a zero image mainly to fill precip */
+						for (l = 0; l < ngrid; l++)
+							if (grid[l].use == 1)
+								gprec[l] = 0;
+					}
 					else {
 
 						/* For zone output, write a line of output anyway
@@ -202,7 +212,15 @@ fprintf(fpout, "\n");
 							zoneout(year[k], j, 0);
 					}
 				}
+				/* If requested, write out grid in NETCDF format */
+
+				if (iout == 5 && j >= igridout1 && j <= igridout2)
+					netcdf_write(&ncid, j, gprec, arc.cols, arc.rows);
 			}
 		}
+
+		if (iout == 5)
+			netcdf_close(&ncid);
+
 	}
 }
