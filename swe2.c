@@ -89,6 +89,7 @@ void swe2()
 											staflg[i] = 0;
 									}
 									krige(l, ns);
+//									w = krige(l, nsta, ad, dgrid, elevations);
 								}
 
 								/* Compute detrended swe at grid cell */

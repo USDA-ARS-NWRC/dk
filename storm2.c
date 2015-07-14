@@ -75,6 +75,7 @@ void storm2()
 										staflg[i] = 0;
 								}
 								krige(l, ns);
+//								w = krige(l, nsta, ad, dgrid, elevations);
 							}
 
 							/* Compute detrended precipitation at grid cell */
