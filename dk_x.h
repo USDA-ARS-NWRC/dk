@@ -121,6 +121,7 @@ extern int mo_start;             /* starting month of OMS-csv input file */
 extern int mtper;                /* maximum number of time periods in a year
                                     (8784 for hourly data; 366 for daily data;
                                     12 for monthly data; 1 for yearly data) */
+extern int netcdfout();			 /* NETCDF output function */
 extern int ngrid;                /* number of grid cells */
 extern int ngriduse;             /* number of grid cells used (non-missing) */
 extern int nmask;                /* number of grid cells within watershed mask */

@@ -269,7 +269,7 @@ int dy_start;                    /* starting day of OMS-csv input file */
 float *elevations;				 /* vector of elevation for each station */
 double exp();                    /* exponential function */
 int *firstday;                   /* vector of first day (period) of data for each year */
-FILE *fopen();                   /* file open function */
+//FILE *fopen();                   /* file open function */
 FILE *fpin1;                     /* pointer to data input file */
 FILE *fpin2;                     /* pointer to elevation grid file */
 FILE *fpin3;                     /* pointer to watershed mask grid file */
@@ -349,6 +349,7 @@ int mo_start;                    /* starting month of OMS-csv input file */
 int mtper;                       /* maximum number of time periods in a year
                                     (8784 for hourly data; 366 for daily data;
                                     12 for monthly data; 1 for yearly data) */
+int netcdfout();				 /* NETCDF output function */
 int ngrid;                       /* number of grid cells */
 int ngriduse;                    /* number of grid cells used (non-missing) */
 int nmask;                       /* number of grid cells within mask */
