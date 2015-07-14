@@ -392,6 +392,7 @@ float *vector();                 /* float vector space allocation function */
 double *w;                       /* kriging weights */
 float **wall;                    /* kriging weight matrix for all stations */
 double *x, *y;                   /* regression data vectors */
+float *xd, *yd;		/* data grid vectors */
 int *year;                       /* years of data */
 int yr_end;                      /* ending year of OMS-csv input file */
 int yr_start;                    /* starting year of OMS-csv input file */

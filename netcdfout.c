@@ -16,6 +16,7 @@
 /* This is the name of the data file we will create. */
 #define DK_TITLE "Created with DK 4.8 tool"
 #define VAR_NAME "variable"
+#define CONVENTION "CF-1.6 (http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.pdf)"
 
 /* We are writing 3D data */
 #define NDIMS 3
@@ -29,9 +30,11 @@
 /*
  * Create the netcdf file
  */
-int netcdf_create(iy, grid, nx, ny, ncid)
+int netcdf_create(iy, x, y, nx, ny, ncid)
 int iy;                          /* year */
-struct grid *grid;							/* grid structure */
+//struct grid *grid;							/* grid structure */
+float *x;
+float *y;
 int nx;								/* number of values in x index */
 int ny;								/* number of values in y index */
 int *ncid;							/* file id for netcdf file */
@@ -39,10 +42,11 @@ int *ncid;							/* file id for netcdf file */
 
 	/* When we create netCDF variables and dimensions, we get back an
 	 * ID for each one. */
-	int t_dimid, x_dimid, y_dimid, varid[3], i;
+	int t_dimid, x_dimid, y_dimid, varid[3];
 	int dimids[NDIMS];
 	int dimids2[2];
-	float *x, *y;			/* vectors for the x and y images */
+	//	float *x, *y;			/* vectors for the x and y images */
+	//	float *vector();                 /* float vector space allocation function */
 
 	/* indexing and error handling. */
 	int retval;
@@ -86,15 +90,31 @@ int *ncid;							/* file id for netcdf file */
 		dimids[2] = dimids2[1] = x_dimid;
 
 		/* define x grid location variable */
-		if ((retval = nc_def_var(*ncid, "east_west", NC_DOUBLE, NDIMS-1, dimids2, &varid[0])))
+		if ((retval = nc_def_var(*ncid, "x", NC_DOUBLE, 1, &x_dimid, &varid[0])))
+			ERR(retval);
+		if ((retval = nc_put_att_text(*ncid, varid[0], "units", strlen("m"), "m")))
+			ERR(retval);
+		if ((retval = nc_put_att_text(*ncid, varid[0], "long_name", strlen("x coordinate of projection"), "x coordinate of projection")))
+			ERR(retval);
+		if ((retval = nc_put_att_text(*ncid, varid[0], "_CoordinateAxisType", strlen("GeoX"), "GeoX")))
 			ERR(retval);
 
 		/* define y grid location variable */
-		if ((retval = nc_def_var(*ncid, "north_south", NC_DOUBLE, NDIMS-1, dimids2, &varid[1])))
+		if ((retval = nc_def_var(*ncid, "y", NC_DOUBLE, 1, &y_dimid, &varid[1])))
+			ERR(retval);
+		if ((retval = nc_put_att_text(*ncid, varid[1], "units", strlen("m"), "m")))
+			ERR(retval);
+		if ((retval = nc_put_att_text(*ncid, varid[1], "long_name", strlen("y coordinate of projection"), "y coordinate of projection")))
+			ERR(retval);
+		if ((retval = nc_put_att_text(*ncid, varid[1], "_CoordinateAxisType", strlen("GeoY"), "GeoY")))
 			ERR(retval);
 
 		/* Define dk variable */
 		if ((retval = nc_def_var(*ncid, VAR_NAME, NC_DOUBLE, NDIMS, dimids, &varid[2])))
+			ERR(retval);
+		if ((retval = nc_put_att_text(*ncid, varid[2], "units", strlen("units"), "units")))
+			ERR(retval);
+		if ((retval = nc_put_att_text(*ncid, varid[2], "long_name", strlen("variable description"), "variable description")))
 			ERR(retval);
 
 		/* Add global attributes for file */
@@ -110,24 +130,20 @@ int *ncid;							/* file id for netcdf file */
 		if ((retval = nc_put_att_text(*ncid, NC_GLOBAL, "Created", strlen(currentDate), currentDate)))
 			ERR(retval);
 
+		if ((retval = nc_put_att_text(*ncid, NC_GLOBAL, "Conventions", strlen(CONVENTION), CONVENTION)))
+			ERR(retval);
+
 		retval = nc_enddef(*ncid);
 
-		/* Add the x, y positions to the file */
-		x = vector(nx*ny);
-		y = vector(nx*ny);
-		for (i = 0; i < nx*ny; i++) {
-			x[i] = grid[i].east;
-			y[i] = grid[i].north;
-		}
-		/* location to put the data */
+		/* location to put the coordinate data */
 		size_t start[] = {0, 0};
 		size_t count[] = {ny, nx};
 
 		if ((retval = nc_put_vara_float(*ncid, varid[0], start, count, x)))
 			ERR(retval);
 
-		//		if ((retval = nc_put_vara_float(*ncid, varid[1], start, count, y)))
-		//				ERR(retval);
+		if ((retval = nc_put_vara_float(*ncid, varid[1], start, count, y)))
+			ERR(retval);
 
 	}
 	else

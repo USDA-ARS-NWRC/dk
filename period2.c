@@ -36,8 +36,15 @@ void period2()
 		nstop = dpp;
 
 		/* Create the netcdf file if wanted */
-		if (iout == 5)
-			netcdf_create(year[k], &grid, arc.cols, arc.rows, &ncid);
+		if (iout == 5) {
+
+			//			for (l = 0; l < ngrid; l++) {
+			//				xd[l] = grid[l].east;
+			//				yd[l] = grid[l].north;
+			//			}
+
+			netcdf_create(year[k], xd, yd, arc.cols, arc.rows, &ncid);
+		}
 
 		/* Period loop */
 
@@ -129,33 +136,31 @@ fprintf(fpout, "\n");
 
 
 								/* Compute "retrended" precipitation at grid cell */
-								if (type == 1) {
-									float bi; /* new weight intercept for each station */
-//									bi = vector(nsta);
-									float wp;
-									float tmp;
-									wp = 0;
-
-									/* Calculate the intercept at each station */
-									for (i = 0; i < nsta; i++) {
-										if (b1[m][k] <= 0)
-											b1[m][k] = 5;
-
-										bi = 1 - b1[m][k] * sta[i].elev; 		/* Make the station elevation have a weight of 1 */
-										tmp = b1[m][k] * grid[l].elev + bi;		/* Weight based on elevation around this station */
-										if (tmp < 0)
-											tmp = 0;
-										wp += wall[l][i] * tmp;
-									}
-
-									gprec[l] *= wp;	/* Multiply kriged value by the elevation trend */
-
-
-								}
-								else {
-									/* Re-trend grid prec/temp */
-									gprec[l] += (b0[m][k] + b1[m][k] * grid[l].elev);
-								}
+								//								if (type == 1) {
+								//									float bi; /* new weight intercept for each station */
+								////									bi = vector(nsta);
+								//									float wp;
+								//									float tmp;
+								//									wp = 0;
+								//
+								//									/* Calculate the intercept at each station */
+								//									for (i = 0; i < nsta; i++) {
+								//										if (b1[m][k] <= 0)
+								//											b1[m][k] = 5;
+								//
+								//										bi = 1 - b1[m][k] * sta[i].elev; 		/* Make the station elevation have a weight of 1 */
+								//										tmp = b1[m][k] * grid[l].elev + bi;		/* Weight based on elevation around this station */
+								//										if (tmp < 0)
+								//											tmp = 0;
+								//										wp += wall[l][i] * tmp;
+								//									}
+								//
+								//									gprec[l] *= wp;	/* Multiply kriged value by the elevation trend */
+								//								}
+								//								else {
+								/* Re-trend grid prec/temp */
+								gprec[l] += (b0[m][k] + b1[m][k] * grid[l].elev);
+								//								}
 
 
 								/* Set grid prec values to zero if estimate is less than zero */
