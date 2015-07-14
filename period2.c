@@ -95,6 +95,8 @@ void period2()
 											staflg[i] = 0;
 									}
 									krige(l, ns);
+									//									w = krige(l, nsta, ad, dgrid, elevations);
+
 									/* Debug
 fprintf(fpout, "\nRevised weights:  Grid point %d, Year %d, Period %d\n",
         l+1, year[k], m+1);
@@ -104,9 +106,9 @@ fprintf(fpout, "\n");
    End debug */
 								}
 
-								/* Compute detrended precipitation at grid cell */
 
 								gprec[l] = 0;
+								/* KRIGING - Calculate detrended values at grid cell */
 								if (imiss == 1) {
 									for (i = 0; i < nsta; i++)
 										gprec[l] += (float) ((w[i] * sta[i].data[j][k]));
@@ -116,17 +118,40 @@ fprintf(fpout, "\n");
 										gprec[l] += (wall[l][i] * sta[i].data[j][k]);
 								}
 
-								/* Re-trend grid prec/temp */
 
-								gprec[l] += (b0[m][k] + b1[m][k] * grid[l].elev);
-								/* Experiment -- scale factor
-                        gprec[l] /= 100.;
-   End experiment */
+								/* Compute "retrended" precipitation at grid cell */
+								if (type == 1) {
+									float bi; /* new weight intercept for each station */
+//									bi = vector(nsta);
+									float wp;
+									float tmp;
+									wp = 0;
 
-								/* Set grid prec values to zero if estimate is
-                           less than zero */
+									/* Calculate the intercept at each station */
+									for (i = 0; i < nsta; i++) {
+										if (b1[m][k] <= 0)
+											b1[m][k] = 5;
 
-								if (gprec[l] < 0 && type == 1)
+										bi = 1 - b1[m][k] * sta[i].elev; 		/* Make the station elevation have a weight of 1 */
+										tmp = b1[m][k] * grid[l].elev + bi;		/* Weight based on elevation around this station */
+										if (tmp < 0)
+											tmp = 0;
+										wp += wall[l][i] * tmp;
+									}
+
+									gprec[l] *= wp;	/* Multiply kriged value by the elevation trend */
+
+
+								}
+								else {
+									/* Re-trend grid prec/temp */
+									gprec[l] += (b0[m][k] + b1[m][k] * grid[l].elev);
+								}
+
+
+								/* Set grid prec values to zero if estimate is less than zero */
+
+								if (gprec[l] < 0.1 && type == 1)
 									gprec[l] = 0;
 
 								/* Add grid prec/temp to basin sum */
@@ -150,6 +175,11 @@ fprintf(fpout, "\n");
 
 						if (iout == 4 && j >= igridout1 && j <= igridout2)
 							ipwout(year[k], j);
+
+						/* If requested, write out grid in NETCDF format */
+
+						if (iout == 5 && j >= igridout1 && j <= igridout2)
+							netcdfout(year[k], j, gprec, arc.cols, arc.rows);
 
 						/* If requested, compute and write out zonal means for day */
 
