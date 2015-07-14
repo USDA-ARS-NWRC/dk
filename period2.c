@@ -10,11 +10,16 @@
 
 #include "dk_x.h"
 
+int netcdf_create();
+int netcdf_write();
+int netcdf_close();
+
 void period2()
 {
 	int i, j, jj, k, l, m, n;  /* loop indexes */
 	int ns;                    /* number of stations with data */
 	int *staflg;				 	 /* station use flags*/
+	int *ncid;		/* file id for netcdf file */
 
 	// set station use flags
 	staflg = ivector(nsta);
@@ -30,12 +35,27 @@ void period2()
 		dppl = n - dpp * nperm1;
 		nstop = dpp;
 
+		/* Create the netcdf file if wanted */
+		if (iout == 5) {
+
+			//			for (l = 0; l < ngrid; l++) {
+			//				xd[l] = grid[l].east;
+			//				yd[l] = grid[l].north;
+			//			}
+
+			netcdf_create(year[k], xd, yd, arc.cols, arc.rows, &ncid);
+		}
+
 		/* Period loop */
 
 		for (m = 0; m < nper; m++) {
 			if (m == nperm1)
 				nstop = dppl;
 			jj = dpp * m + firstday[k] - 1;
+
+			/* create an array of empty zeros*/
+			for (l = 0; l < ngrid; l++)
+					gprec[l] = 0;
 
 			/* Process all days that have valid detrending coefficients */
 
@@ -107,7 +127,7 @@ fprintf(fpout, "\n");
 								}
 
 
-								gprec[l] = 0;
+//								gprec[l] = 0;
 								/* KRIGING - Calculate detrended values at grid cell */
 								if (imiss == 1) {
 									for (i = 0; i < nsta; i++)
@@ -120,33 +140,31 @@ fprintf(fpout, "\n");
 
 
 								/* Compute "retrended" precipitation at grid cell */
-								if (type == 1) {
-									float bi; /* new weight intercept for each station */
-//									bi = vector(nsta);
-									float wp;
-									float tmp;
-									wp = 0;
-
-									/* Calculate the intercept at each station */
-									for (i = 0; i < nsta; i++) {
-										if (b1[m][k] <= 0)
-											b1[m][k] = 5;
-
-										bi = 1 - b1[m][k] * sta[i].elev; 		/* Make the station elevation have a weight of 1 */
-										tmp = b1[m][k] * grid[l].elev + bi;		/* Weight based on elevation around this station */
-										if (tmp < 0)
-											tmp = 0;
-										wp += wall[l][i] * tmp;
-									}
-
-									gprec[l] *= wp;	/* Multiply kriged value by the elevation trend */
-
-
-								}
-								else {
-									/* Re-trend grid prec/temp */
-									gprec[l] += (b0[m][k] + b1[m][k] * grid[l].elev);
-								}
+								//								if (type == 1) {
+								//									float bi; /* new weight intercept for each station */
+								////									bi = vector(nsta);
+								//									float wp;
+								//									float tmp;
+								//									wp = 0;
+								//
+								//									/* Calculate the intercept at each station */
+								//									for (i = 0; i < nsta; i++) {
+								//										if (b1[m][k] <= 0)
+								//											b1[m][k] = 5;
+								//
+								//										bi = 1 - b1[m][k] * sta[i].elev; 		/* Make the station elevation have a weight of 1 */
+								//										tmp = b1[m][k] * grid[l].elev + bi;		/* Weight based on elevation around this station */
+								//										if (tmp < 0)
+								//											tmp = 0;
+								//										wp += wall[l][i] * tmp;
+								//									}
+								//
+								//									gprec[l] *= wp;	/* Multiply kriged value by the elevation trend */
+								//								}
+								//								else {
+								/* Re-trend grid prec/temp */
+								gprec[l] += (b0[m][k] + b1[m][k] * grid[l].elev);
+								//								}
 
 
 								/* Set grid prec values to zero if estimate is less than zero */
@@ -176,11 +194,6 @@ fprintf(fpout, "\n");
 						if (iout == 4 && j >= igridout1 && j <= igridout2)
 							ipwout(year[k], j);
 
-						/* If requested, write out grid in NETCDF format */
-
-						if (iout == 5 && j >= igridout1 && j <= igridout2)
-							netcdfout(year[k], j, gprec, arc.cols, arc.rows);
-
 						/* If requested, compute and write out zonal means for day */
 
 						if (izone == 1)
@@ -202,7 +215,15 @@ fprintf(fpout, "\n");
 							zoneout(year[k], j, 0);
 					}
 				}
+				/* If requested, write out grid in NETCDF format */
+
+				if (iout == 5 && j >= igridout1 && j <= igridout2)
+					netcdf_write(&ncid, j, gprec, arc.cols, arc.rows);
 			}
 		}
+
+		if (iout == 5)
+			netcdf_close(&ncid);
+
 	}
 }

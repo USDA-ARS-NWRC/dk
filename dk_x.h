@@ -164,6 +164,7 @@ extern float *vector();          /* float vector space allocation function */
 extern double *w;                /* kriging weights */
 extern float **wall;             /* kriging weight matrix for all stations */
 extern double *x, *y;            /* regression data vectors */
+extern float *xd, *yd;			 /* data grid vectors */
 extern int *year;                /* years of data */
 extern int yr_end;               /* ending year of OMS-csv input file */
 extern int yr_start;             /* starting year of OMS-csv input file */
