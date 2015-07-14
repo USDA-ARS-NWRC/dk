@@ -55,7 +55,7 @@ void period2()
 
 			/* create an array of empty zeros*/
 			for (l = 0; l < ngrid; l++)
-					gprec[l] = 0;
+				gprec[l] = 0;
 
 			/* Process all days that have valid detrending coefficients */
 
@@ -127,7 +127,7 @@ fprintf(fpout, "\n");
 								}
 
 
-//								gprec[l] = 0;
+								//								gprec[l] = 0;
 								/* KRIGING - Calculate detrended values at grid cell */
 								if (imiss == 1) {
 									for (i = 0; i < nsta; i++)
@@ -169,7 +169,7 @@ fprintf(fpout, "\n");
 
 								/* Set grid prec values to zero if estimate is less than zero */
 
-								if (gprec[l] < 0.1 && type == 1)
+								if (gprec[l] < 0 && type == 1)
 									gprec[l] = 0;
 
 								/* Add grid prec/temp to basin sum */
@@ -214,12 +214,21 @@ fprintf(fpout, "\n");
 						if (izone == 1)
 							zoneout(year[k], j, 0);
 					}
-				}
-				/* If requested, write out grid in NETCDF format */
 
-				if (iout == 5 && j >= igridout1 && j <= igridout2)
-					netcdf_write(&ncid, j, gprec, arc.cols, arc.rows);
+					/* If requested, write out grid in NETCDF format */
+
+					//					if (iout == 5 && j >= igridout1 && j <= igridout2)
+					//						netcdf_write(&ncid, j, gprec, arc.cols, arc.rows);
+				}
+
 			}
+			else
+				j = jj;
+
+			/* If requested, write out grid in NETCDF format */
+
+			if (iout == 5 && j >= igridout1 && j <= igridout2)
+				netcdf_write(&ncid, j, gprec, arc.cols, arc.rows);
 		}
 
 		if (iout == 5)
