@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
 
 #include "dk_x.h"
 
@@ -37,12 +38,6 @@ void period2()
 
 		/* Create the netcdf file if wanted */
 		if (iout == 5) {
-
-			//			for (l = 0; l < ngrid; l++) {
-			//				xd[l] = grid[l].east;
-			//				yd[l] = grid[l].north;
-			//			}
-
 			netcdf_create(year[k], xd, yd, arc.cols, arc.rows, &ncid);
 		}
 

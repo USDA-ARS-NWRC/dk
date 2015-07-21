@@ -5,6 +5,10 @@
  *
  *    netcdf_create - creates the netcdf file to start writing to
  *    netcdf_write - Write the data to a netcdf file
+ *
+ *    A little bit about chunking:
+ *    http://www.unidata.ucar.edu/blogs/developer/en/entry/chunking_data_why_it_matters
+ *    http://www.unidata.ucar.edu/blogs/developer/en/entry/chunking_data_choosing_shapes
  */
 
 #include <stdlib.h>
@@ -12,14 +16,18 @@
 #include <netcdf.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 
 /* This is the name of the data file we will create. */
 #define DK_TITLE "Created with DK 4.8 tool"
 #define VAR_NAME "variable"
 #define CONVENTION "CF-1.6 (http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.pdf)"
+#define FILE_NAME "dk_out_%i.nc"
 
 /* We are writing 3D data */
 #define NDIMS 3
+#define CHUNKSIZE 8096		// size of chunk in bytes
+#define VALSIZE 4			// size of value in bytes for a 32-bit float
 
 /* Handle errors by printing an error message and exiting with a
  * non-zero status. */
@@ -45,8 +53,9 @@ int *ncid;							/* file id for netcdf file */
 	int t_dimid, x_dimid, y_dimid, varid[3];
 	int dimids[NDIMS];
 	int dimids2[2];
-	//	float *x, *y;			/* vectors for the x and y images */
-	//	float *vector();                 /* float vector space allocation function */
+	size_t *chunkSizes;
+//	int chunkVals;
+	int chunk_size();
 
 	/* indexing and error handling. */
 	int retval;
@@ -55,22 +64,16 @@ int *ncid;							/* file id for netcdf file */
 	char file_name[20];
 	snprintf(file_name, sizeof(file_name), "dk_out_%i.nc", iy);
 
-	/* data size */
-	//	printf("Year: %/i period: %i filename: %s\n", iy, ip, file_name);
 
 	/* If there isn't a netcdf file, then create one, else just open it
 	 * Create the file. NC_NOCOBBER will not overwrite an existing file
 	 */
-	retval = nc_create(file_name, NC_NOCLOBBER, ncid);
+	retval = nc_create(file_name, NC_CLOBBER | NC_NETCDF4, ncid);
 	if ((retval == NC_EEXIST))
 	{
 		/* File exists so open it instead */
 		if ((retval = nc_open(file_name, NC_WRITE, ncid)))
 			ERR(retval);
-
-		/* Get the variable id */
-		//		if ((retval = nc_inq_varid (*ncid, VAR_NAME, &varid)))
-		//			ERR(retval);
 
 	}
 	else if ((retval == NC_NOERR))
@@ -90,7 +93,7 @@ int *ncid;							/* file id for netcdf file */
 		dimids[2] = dimids2[1] = x_dimid;
 
 		/* define x grid location variable */
-		if ((retval = nc_def_var(*ncid, "x", NC_DOUBLE, 1, &x_dimid, &varid[0])))
+		if ((retval = nc_def_var(*ncid, "x", NC_FLOAT, 1, &x_dimid, &varid[0])))
 			ERR(retval);
 		if ((retval = nc_put_att_text(*ncid, varid[0], "units", strlen("m"), "m")))
 			ERR(retval);
@@ -100,7 +103,7 @@ int *ncid;							/* file id for netcdf file */
 			ERR(retval);
 
 		/* define y grid location variable */
-		if ((retval = nc_def_var(*ncid, "y", NC_DOUBLE, 1, &y_dimid, &varid[1])))
+		if ((retval = nc_def_var(*ncid, "y", NC_FLOAT, 1, &y_dimid, &varid[1])))
 			ERR(retval);
 		if ((retval = nc_put_att_text(*ncid, varid[1], "units", strlen("m"), "m")))
 			ERR(retval);
@@ -110,11 +113,16 @@ int *ncid;							/* file id for netcdf file */
 			ERR(retval);
 
 		/* Define dk variable */
-		if ((retval = nc_def_var(*ncid, VAR_NAME, NC_DOUBLE, NDIMS, dimids, &varid[2])))
+		if ((retval = nc_def_var(*ncid, VAR_NAME, NC_FLOAT, NDIMS, dimids, &varid[2])))
 			ERR(retval);
 		if ((retval = nc_put_att_text(*ncid, varid[2], "units", strlen("units"), "units")))
 			ERR(retval);
 		if ((retval = nc_put_att_text(*ncid, varid[2], "long_name", strlen("variable description"), "variable description")))
+			ERR(retval);
+
+		/* Set the chunk size */
+		retval = chunk_size(nx, ny, &chunkSizes);
+		if ((retval = nc_def_var_chunking(*ncid, varid[2], NC_CHUNKED, chunkSizes)))
 			ERR(retval);
 
 		/* Add global attributes for file */
@@ -148,30 +156,6 @@ int *ncid;							/* file id for netcdf file */
 	}
 	else
 		ERR(retval);
-
-	/*
-	 * Write the data to the file
-	 */
-
-	//	j = nx*ny - 1;   // j will Point to last Element
-	//	i = 0;       // i will be pointing to first element
-	//	while (i < j) {
-	//		temp = data[i];
-	//		data[i] = data[j];
-	//		data[j] = temp;
-	//		i++;             // increment i
-	//		j--;          // decrement j
-	//	}
-
-	//	if ((retval = nc_put_vara_float(ncid, varid, start, count, data)))
-	//		ERR(retval);
-
-
-
-	/* Close the file. This frees up any internal netCDF resources
-	 * associated with the file, and flushes any buffers. */
-	//	if ((retval = nc_close(ncid)))
-	//		ERR(retval);
 
 	return 0;
 }
@@ -219,6 +203,33 @@ int ny;								/* number of values in y index */
 	return 0;
 }
 
+/*
+ * Determine the "optimized" chunk size for the data. This is based
+ * off the blog at
+ * http://www.unidata.ucar.edu/blogs/developer/en/entry/chunking_data_choosing_shapes
+ */
+int chunk_size(nx, ny, chunkSize)
+int nx;			/* number of x dimension */
+int ny;			/* number of y dimension */
+int *chunkSize;	/* pointer to chunk size */
+{
+	int t_chunk = 6;						// 'ideal' number of time chunks, favoring spatial slice
+	int chunkVals = CHUNKSIZE/VALSIZE; 		// ideal number of values in a chunk
+	int numChunks = sqrt(chunkVals/t_chunk);		// ideal number of chuncks
+	int cSize[NDIMS];
+
+//	printf("%i\n",t_chunk);
+//	printf("%i\n",chunkVals);
+//	printf("%i\n",numChunks);
+
+	cSize[0] = t_chunk;
+	cSize[1] = numChunks;
+	cSize[2] = numChunks;
+
+	chunkSize = cSize;
+
+	return 0;
+}
 
 /*
  * Close the netcdf file when done
