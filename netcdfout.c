@@ -68,7 +68,7 @@ int *ncid;							/* file id for netcdf file */
 	/* If there isn't a netcdf file, then create one, else just open it
 	 * Create the file. NC_NOCOBBER will not overwrite an existing file
 	 */
-	retval = nc_create(file_name, NC_CLOBBER | NC_NETCDF4, ncid);
+	retval = nc_create(file_name, NC_NOCLOBBER | NC_NETCDF4, ncid);
 	if ((retval == NC_EEXIST))
 	{
 		/* File exists so open it instead */
