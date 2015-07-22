@@ -181,7 +181,7 @@ int ny;								/* number of values in y index */
 
 	/* location to put the data */
 	size_t start[] = {ip, 0, 0};
-	size_t count[] = {1, ny, nx};
+	size_t count[] = {1, nx, ny};
 
 	/*
 	 * Write the data to the file
