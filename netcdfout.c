@@ -54,7 +54,7 @@ int *ncid;							/* file id for netcdf file */
 	int dimids[NDIMS];
 	int dimids2[2];
 	size_t *chunkSizes;
-//	int chunkVals;
+	//	int chunkVals;
 	int chunk_size();
 
 	/* indexing and error handling. */
@@ -144,13 +144,17 @@ int *ncid;							/* file id for netcdf file */
 		retval = nc_enddef(*ncid);
 
 		/* location to put the coordinate data */
-		size_t start[] = {0, 0};
-		size_t count[] = {ny, nx};
+		//		size_t start[] = {0, 0};
+		//		size_t count[] = {ny, nx};
 
-		if ((retval = nc_put_vara_float(*ncid, varid[0], start, count, x)))
+		//		size_t start[] = {0};
+		//		size_t countx[] = {nx};
+
+		if ((retval = nc_put_var_float(*ncid, varid[0], x)))
 			ERR(retval);
 
-		if ((retval = nc_put_vara_float(*ncid, varid[1], start, count, y)))
+		//		size_t county[] = {1, ny};
+		if ((retval = nc_put_var_float(*ncid, varid[1], y)))
 			ERR(retval);
 
 	}
@@ -181,24 +185,18 @@ int ny;								/* number of values in y index */
 
 	/* location to put the data */
 	size_t start[] = {ip, 0, 0};
-	size_t count[] = {1, nx, ny};
+	size_t count[] = {1, ny, nx};
 
 	/*
 	 * Write the data to the file
 	 */
-
-	//	j = nx*ny - 1;   // j will Point to last Element
-	//	i = 0;       // i will be pointing to first element
-	//	while (i < j) {
-	//		temp = data[i];
-	//		data[i] = data[j];
-	//		data[j] = temp;
-	//		i++;             // increment i
-	//		j--;          // decrement j
-	//	}
-
 	if ((retval = nc_put_vara_float(*ncid, varid, start, count, data)))
 		ERR(retval);
+
+	// sync to disk if it's a multiple of ten
+	if (ip % 10 == 0)
+		if ((retval = nc_sync(*ncid)))
+			ERR(retval);
 
 	return 0;
 }
@@ -218,9 +216,9 @@ int *chunkSize;	/* pointer to chunk size */
 	int numChunks = sqrt(chunkVals/t_chunk);		// ideal number of chuncks
 	int cSize[NDIMS];
 
-//	printf("%i\n",t_chunk);
-//	printf("%i\n",chunkVals);
-//	printf("%i\n",numChunks);
+	//	printf("%i\n",t_chunk);
+	//	printf("%i\n",chunkVals);
+	//	printf("%i\n",numChunks);
 
 	cSize[0] = t_chunk;
 	cSize[1] = numChunks;

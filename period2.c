@@ -210,10 +210,6 @@ fprintf(fpout, "\n");
 							zoneout(year[k], j, 0);
 					}
 
-					/* If requested, write out grid in NETCDF format */
-
-					//					if (iout == 5 && j >= igridout1 && j <= igridout2)
-					//						netcdf_write(&ncid, j, gprec, arc.cols, arc.rows);
 				}
 
 			}
@@ -221,9 +217,10 @@ fprintf(fpout, "\n");
 				j = jj;
 
 			/* If requested, write out grid in NETCDF format */
-
+//			printf("%i\n",j);
 			if (iout == 5 && j >= igridout1 && j <= igridout2)
 				netcdf_write(&ncid, j, gprec, arc.cols, arc.rows);
+
 		}
 
 		if (iout == 5)
