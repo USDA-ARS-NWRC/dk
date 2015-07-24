@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include "dk_x.h"
 #include "dk_m.h"
 
@@ -51,6 +52,7 @@ extern int iprintweights;
 extern int iomscsv;
 extern int ikwfile;
 extern int mtper;
+extern int roundVal;
 
 /*
  *  Read through the configuation file and set parameters accordingly.
@@ -369,6 +371,9 @@ void get_file_configuration(char configuration_filename[101])
 				strcpy(kw_filename, value);
 				ikwfile = 1;
 			}
+		}
+		else if (strcmp(name, "output-rounding") == 0) {
+			roundVal = pow(10, atoi(value));
 		}
 	}
 

@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "dk_x.h"
 
@@ -28,7 +29,6 @@ void period2()
 		staflg[m] = 1;
 
 	/* Year loop */
-
 	for (k = 0; k < nyear; k++) {
 		n = lastday[k] - firstday[k] + 1;
 		nper = n / dpp;
@@ -172,6 +172,12 @@ fprintf(fpout, "\n");
 								if (imask == 0 || (imask == 1 && grid[l].mask == 1))
 									dum += gprec[l];
 							}
+
+							/* round value */
+							if (roundVal != -99)
+								gprec[l] = round(gprec[l] * roundVal) / roundVal;
+
+
 						}
 
 						/* If requested, write out grid in GRASS format */
@@ -217,7 +223,7 @@ fprintf(fpout, "\n");
 				j = jj;
 
 			/* If requested, write out grid in NETCDF format */
-//			printf("%i\n",j);
+			//			printf("%i\n",j);
 			if (iout == 5 && j >= igridout1 && j <= igridout2)
 				netcdf_write(&ncid, j, gprec, arc.cols, arc.rows);
 

@@ -369,6 +369,7 @@ void readgrid();                 /* function to read grid data */
 float replace;                   /* code to replace an accumulated precip
                                     value */
 int ret;                         /* function return code */
+int roundVal = -99;		 		 /* number of decimal place to round to 10^roundVal */
 double se;                       /* standard error */
 float **snolin;                  /* snowline */
 int sreg();                      /* simple linear regression function */

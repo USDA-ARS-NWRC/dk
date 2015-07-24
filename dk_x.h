@@ -141,6 +141,7 @@ extern void readgrid();          /* function to read grid data */
 extern float replace;            /* code to replace an accumulated precip
                                     value */
 extern int ret;                  /* function return code */
+extern int roundVal;			 /* number of decimal place to round to 10^roundVal */
 extern double se;                /* standard error */
 extern float **snolin;           /* snowline */
 extern int sreg();               /* simple linear regression function */
