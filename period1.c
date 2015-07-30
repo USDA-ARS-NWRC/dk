@@ -168,6 +168,12 @@ if (m == 8 && year[k] == 69) {
 
 			/* Calculate trend lines */
 
+			/* If only one point, make slope and int zero */
+			if (n == 0) {
+				b0[m][k] = b1[m][k] = 0;
+			}
+
+			/* if 2 or more points, fit line, constrain */
 			if (n > 0) {
 				if (irmeth == 1)
 					ret = sreg(x, y, &b0dum, &b1dum, &r, &se, &t, n+1);

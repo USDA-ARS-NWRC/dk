@@ -1,4 +1,4 @@
 *.o
 dk
 .project
-.p*
+.*
