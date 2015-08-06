@@ -198,10 +198,10 @@ fprintf(fpout, "grid cell %d:  north = %.8f   east = %.8f   elev = %.3f\n",
 		/* arc vectors */
 		xd = vector(arc.cols);
 		yd = vector(arc.rows);
-		for (i = 0; i < arc.rows; i++)
-			yd[i] = arc.yll + ((double) arc.rows - (double) i - 0.5) * arc.cell;
-		for (i = 0; i < arc.cols; i++)
-			xd[i] = (float) (arc.xll + ((double) i + 0.5) * arc.cell);
+		for (j = 0; j < arc.rows; j++)
+			yd[j] = arc.yll + ((double) arc.rows - (double) j - 0.5) * arc.cell;
+		for (j = 0; j < arc.cols; j++)
+			xd[j] = (float) (arc.xll + ((double) j + 0.5) * arc.cell);
 
 		/* fill for each grid cell */
 		for (j = 0; j < arc.rows; j++) {
