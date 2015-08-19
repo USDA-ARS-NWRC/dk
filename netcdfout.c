@@ -26,8 +26,8 @@
 
 /* We are writing 3D data */
 #define NDIMS 3
-#define CHUNKSIZE 8096		// size of chunk in bytes
-#define VALSIZE 4			// size of value in bytes for a 32-bit float
+//#define CHUNKSIZE 4096		// size of chunk in bytes
+//#define VALSIZE 4			// size of value in bytes for a 32-bit float
 
 /* Handle errors by printing an error message and exiting with a
  * non-zero status. */
@@ -52,10 +52,14 @@ int *ncid;							/* file id for netcdf file */
 	 * ID for each one. */
 	int t_dimid, x_dimid, y_dimid, varid[3];
 	int dimids[NDIMS];
-	int dimids2[2];
-	size_t *chunkSizes;
-	//	int chunkVals;
-	int chunk_size();
+//	int dimids2[2];
+	size_t chunkSizes[3];
+//	int chunkSize[3];
+//	int chunkVals;
+//	int chunk_size();
+	chunkSizes[0] = 10;
+	chunkSizes[1] = 50;
+	chunkSizes[2] = 50;
 
 	/* indexing and error handling. */
 	int retval;
@@ -79,7 +83,7 @@ int *ncid;							/* file id for netcdf file */
 	else if ((retval == NC_NOERR))
 	{
 		/* Define the dimensions. NetCDF will hand back an ID for each. */
-		if ((retval = nc_def_dim(*ncid, "Time", NC_UNLIMITED, &t_dimid)))
+		if ((retval = nc_def_dim(*ncid, "time", NC_UNLIMITED, &t_dimid)))
 			ERR(retval);
 		if ((retval = nc_def_dim(*ncid, "y", ny, &y_dimid)))
 			ERR(retval);
@@ -89,40 +93,48 @@ int *ncid;							/* file id for netcdf file */
 		/* The dimids array is used to pass the IDs of the dimensions of
 		 * the variable. */
 		dimids[0] = t_dimid;
-		dimids[1] = dimids2[0] = y_dimid;
-		dimids[2] = dimids2[1] = x_dimid;
+		dimids[1] = y_dimid;
+		dimids[2] = x_dimid;
+
+		/* define time variable */
+		if ((retval = nc_def_var(*ncid, "time", NC_INT, 1, &t_dimid, &varid[0])))
+			ERR(retval);
+		if ((retval = nc_put_att_text(*ncid, varid[0], "units", strlen("units"), "units")))
+			ERR(retval);
+		if ((retval = nc_put_att_text(*ncid, varid[0], "long_name", strlen("time"), "time")))
+			ERR(retval);
 
 		/* define x grid location variable */
-		if ((retval = nc_def_var(*ncid, "x", NC_FLOAT, 1, &x_dimid, &varid[0])))
-			ERR(retval);
-		if ((retval = nc_put_att_text(*ncid, varid[0], "units", strlen("m"), "m")))
-			ERR(retval);
-		if ((retval = nc_put_att_text(*ncid, varid[0], "long_name", strlen("x coordinate of projection"), "x coordinate of projection")))
-			ERR(retval);
-		if ((retval = nc_put_att_text(*ncid, varid[0], "_CoordinateAxisType", strlen("GeoX"), "GeoX")))
-			ERR(retval);
-
-		/* define y grid location variable */
-		if ((retval = nc_def_var(*ncid, "y", NC_FLOAT, 1, &y_dimid, &varid[1])))
+		if ((retval = nc_def_var(*ncid, "x", NC_FLOAT, 1, &x_dimid, &varid[1])))
 			ERR(retval);
 		if ((retval = nc_put_att_text(*ncid, varid[1], "units", strlen("m"), "m")))
 			ERR(retval);
-		if ((retval = nc_put_att_text(*ncid, varid[1], "long_name", strlen("y coordinate of projection"), "y coordinate of projection")))
+		if ((retval = nc_put_att_text(*ncid, varid[1], "long_name", strlen("x coordinate of projection"), "x coordinate of projection")))
 			ERR(retval);
-		if ((retval = nc_put_att_text(*ncid, varid[1], "_CoordinateAxisType", strlen("GeoY"), "GeoY")))
+		if ((retval = nc_put_att_text(*ncid, varid[1], "_CoordinateAxisType", strlen("GeoX"), "GeoX")))
+			ERR(retval);
+
+		/* define y grid location variable */
+		if ((retval = nc_def_var(*ncid, "y", NC_FLOAT, 1, &y_dimid, &varid[2])))
+			ERR(retval);
+		if ((retval = nc_put_att_text(*ncid, varid[2], "units", strlen("m"), "m")))
+			ERR(retval);
+		if ((retval = nc_put_att_text(*ncid, varid[2], "long_name", strlen("y coordinate of projection"), "y coordinate of projection")))
+			ERR(retval);
+		if ((retval = nc_put_att_text(*ncid, varid[2], "_CoordinateAxisType", strlen("GeoY"), "GeoY")))
 			ERR(retval);
 
 		/* Define dk variable */
-		if ((retval = nc_def_var(*ncid, VAR_NAME, NC_FLOAT, NDIMS, dimids, &varid[2])))
+		if ((retval = nc_def_var(*ncid, VAR_NAME, NC_FLOAT, NDIMS, dimids, &varid[3])))
 			ERR(retval);
-		if ((retval = nc_put_att_text(*ncid, varid[2], "units", strlen("units"), "units")))
+		if ((retval = nc_put_att_text(*ncid, varid[3], "units", strlen("units"), "units")))
 			ERR(retval);
-		if ((retval = nc_put_att_text(*ncid, varid[2], "long_name", strlen("variable description"), "variable description")))
+		if ((retval = nc_put_att_text(*ncid, varid[3], "long_name", strlen("variable description"), "variable description")))
 			ERR(retval);
 
 		/* Set the chunk size */
-		retval = chunk_size(nx, ny, &chunkSizes);
-		if ((retval = nc_def_var_chunking(*ncid, varid[2], NC_CHUNKED, chunkSizes)))
+//		retval = chunk_size(nx, ny, chunkSizes);
+		if ((retval = nc_def_var_chunking(*ncid, varid[3], NC_CHUNKED, &chunkSizes[0])))
 			ERR(retval);
 
 		/* Add global attributes for file */
@@ -150,11 +162,14 @@ int *ncid;							/* file id for netcdf file */
 		//		size_t start[] = {0};
 		//		size_t countx[] = {nx};
 
-		if ((retval = nc_put_var_float(*ncid, varid[0], x)))
+//		if ((retval = nc_put_var_int(*ncid, varid[0], t)))
+//			ERR(retval);
+
+		if ((retval = nc_put_var_float(*ncid, varid[1], x)))
 			ERR(retval);
 
 		//		size_t county[] = {1, ny};
-		if ((retval = nc_put_var_float(*ncid, varid[1], y)))
+		if ((retval = nc_put_var_float(*ncid, varid[2], y)))
 			ERR(retval);
 
 	}
@@ -202,32 +217,70 @@ int ny;								/* number of values in y index */
 }
 
 /*
+ * Get time steps to write to time varible (pk 8-7-2015)
+ */
+int netcdf_timesteps(ncid, j)
+int *ncid;						/* file id for netcdf file */
+int j;
+{
+	int *ivector();
+
+	int varid;		/* variable id */
+	int retval;		/* indexing and error handling. */
+	int p;          /* indexing var */
+	int *ts;         /* time step vector */
+
+	ts = ivector(j);
+	/* get id of time variable  */
+	if ((retval = nc_inq_varid(*ncid, "time", &varid)))
+		ERR(retval);
+
+	for (p = 0; p < j; p++) {    /* build time step vector */
+		ts[p] = p;
+	}
+
+
+	/*
+	 * Write the data to the file
+	 */
+	if ((retval = nc_put_var_int(*ncid, varid, ts)))
+		ERR(retval);
+
+	return 0;
+}
+
+
+
+
+/*
  * Determine the "optimized" chunk size for the data. This is based
  * off the blog at
  * http://www.unidata.ucar.edu/blogs/developer/en/entry/chunking_data_choosing_shapes
  */
-int chunk_size(nx, ny, chunkSize)
-int nx;			/* number of x dimension */
-int ny;			/* number of y dimension */
-int *chunkSize;	/* pointer to chunk size */
-{
-	int t_chunk = 6;						// 'ideal' number of time chunks, favoring spatial slice
-	int chunkVals = CHUNKSIZE/VALSIZE; 		// ideal number of values in a chunk
-	int numChunks = sqrt(chunkVals/t_chunk);		// ideal number of chuncks
-	int cSize[NDIMS];
+//int chunk_size(nx, ny, chunkSize)
+//int nx;			/* number of x dimension */
+//int ny;			/* number of y dimension */
+//int *chunkSizes;	/* pointer to chunk size */
+//{
+//	int t_chunk = 6;						 // 'ideal' number of time chunks, favoring spatial slice
+//	int chunkVals = CHUNKSIZE/VALSIZE; 		 // ideal number of values in a chunk
+//	int numChunks = sqrt(chunkVals/t_chunk); // ideal number of chunks
+//	int cSize[NDIMS];
 
-	//	printf("%i\n",t_chunk);
-	//	printf("%i\n",chunkVals);
-	//	printf("%i\n",numChunks);
+//	printf("%i\n",t_chunk);
+//	printf("%i\n",chunkVals);
+//	printf("%i\n",numChunks);
 
-	cSize[0] = t_chunk;
-	cSize[1] = numChunks;
-	cSize[2] = numChunks;
+	// cSize[0] = t_chunk;
+	// cSize[1] = numChunks;
+	// cSize[2] = numChunks;
+//	cSize[0] = 800;
+//	cSize[1] = 100;
+//	cSize[2] = 100;
+//	chunkSizes = cSize;
 
-	chunkSize = cSize;
-
-	return 0;
-}
+//	return 0;
+//}
 
 /*
  * Close the netcdf file when done

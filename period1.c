@@ -142,18 +142,18 @@ fprintf(fpout, "\nnn = %d", nn);
 			n = -1;
 			for (i = 0; i < nsta; i++) {
 				if (adata[i] <= 99998) {
-					if (type == 1){
-						if (adata[i] > 0){ // if the precip is greater than zero keep
-							n++;
-							x[n] = sta[i].elev;
-							y[n] = adata[i];
-						}
-					}
-					else {
-						n++;
-						x[n] = sta[i].elev;
-						y[n] = adata[i];
-					}
+					//					if (type == 1){
+					//						if (adata[i] > 0){ // if the precip is greater than zero keep
+					//							n++;
+					//							x[n] = sta[i].elev;
+					//							y[n] = adata[i];
+					//						}
+					//					}
+					//					else {
+					n++;
+					x[n] = sta[i].elev;
+					y[n] = adata[i];
+					//					}
 				}
 			}
 			/* Debug
@@ -203,16 +203,16 @@ if (m == 8 && year[k] == 69) {
 
 					/* Compute residuals */
 
-					if (type != 1) {
-						for (i = 0; i < nsta; i++) {
-							dum = b0[m][k] + b1[m][k] * sta[i].elev;
-							for (n = 0; n < nstop; n++) {
-								j = jj + n;
-								if (map[j][k] > missing && sta[i].data[j][k] < accum)
-									sta[i].data[j][k] -= dum;
-							}
+					//					if (type != 1) {
+					for (i = 0; i < nsta; i++) {
+						dum = b0[m][k] + b1[m][k] * sta[i].elev;
+						for (n = 0; n < nstop; n++) {
+							j = jj + n;
+							if (map[j][k] > missing && sta[i].data[j][k] < accum)
+								sta[i].data[j][k] -= dum;
 						}
 					}
+					//					}
 				}
 				else if (ret == 1 && ireg == 1)
 					fprintf(fpout, "\n%6d  %s", m+1,
