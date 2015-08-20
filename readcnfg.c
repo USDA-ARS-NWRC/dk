@@ -53,6 +53,7 @@ extern int iomscsv;
 extern int ikwfile;
 extern int mtper;
 extern int roundVal;
+extern int N;
 
 /*
  *  Read through the configuation file and set parameters accordingly.
@@ -374,6 +375,14 @@ void get_file_configuration(char configuration_filename[101])
 		}
 		else if (strcmp(name, "output-rounding") == 0) {
 			roundVal = pow(10, atoi(value));
+		}
+		else if (strcmp(name, "N-closest-stations") == 0) {
+			if (strlen(value) == 0) {
+				N = -99;
+			}
+			else {
+				N = atoi(value);
+			}
 		}
 	}
 

@@ -215,7 +215,7 @@
  *          
  */
 
-#include "malloc.h" 
+#include <malloc/malloc.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -349,6 +349,7 @@ int mo_start;                    /* starting month of OMS-csv input file */
 int mtper;                       /* maximum number of time periods in a year
                                     (8784 for hourly data; 366 for daily data;
                                     12 for monthly data; 1 for yearly data) */
+int N = -99;							 /* N closest stations to use in kriging */
 int netcdfout();				 /* NETCDF output function */
 int ngrid;                       /* number of grid cells */
 int ngriduse;                    /* number of grid cells used (non-missing) */
@@ -754,15 +755,17 @@ printf("\nMAP for period %d year %d = %8.4f\n", j+1, year[k], map[j][k]);
 			/* Calculate kriging weights using all stations */
 			omp_set_dynamic(0);     // Explicitly disable dynamic teams
 			omp_set_num_threads(nthreads); // Use N threads for all consecutive parallel regions
+			if (N < 0)
+				N = nsta;
 
-			#pragma omp parallel shared(nsta, ad, dgrid, elevations, grid) private(i, j, w)
+			#pragma omp parallel shared(nsta, ad, dgrid, elevations, grid, N) private(i, j, w)
 			{
 				#pragma omp for
 				for (i = 0; i < ngrid; i++) {
 
 					if (grid[i].use == 1) {
 
-						w = krige(i, nsta, ad, dgrid, elevations);
+						w = krige(i, nsta, ad, dgrid, elevations, N);
 
 //						#pragma omp critical
 //						{
