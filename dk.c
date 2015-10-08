@@ -341,8 +341,8 @@ int lusolv();                    /* linear equation solver - LU decomposition */
 double mae;                      /* mean absolute error */
 float **map;                     /* mean areal prec/temp matrix */
 float **matrix();                /* float matrix space allocation function */
-int medfit();                    /* least absolute deviations regression
-                                    function */
+int medfit();                    /* least absolute deviations regression function */
+int medfit_const();                    /* least absolute deviations regression function */
 float missing;                   /* missing data value (9999.8 internally) */
 int mo_end;                      /* ending month of OMS-csv input file */
 int mo_start;                    /* starting month of OMS-csv input file */

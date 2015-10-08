@@ -25,6 +25,7 @@ void period1()
 	int i, j, jj, k, m, n, nn;    /* loop indexes */
 	float interp();               /* accumulated precip interpolation function */
 	float intval[MSTA];           /* interpolated accumulated precip value */
+//	float def = 1.06;			/* default slope of line */
 
 	for (i = 0; i < nsta; i++)
 		intval[i] = -1;
