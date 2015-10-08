@@ -15,6 +15,8 @@
 int netcdf_create();
 int netcdf_write();
 int netcdf_close();
+int netcdf_timesteps();
+
 
 void period2()
 {
@@ -229,8 +231,9 @@ fprintf(fpout, "\n");
 
 		}
 
-		if (iout == 5)
+		if (iout == 5) {
+			netcdf_timesteps(&ncid, j);
 			netcdf_close(&ncid);
-
+		}
 	}
 }
