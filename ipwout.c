@@ -52,6 +52,10 @@
 
 #include "dk_x.h"
 
+unsigned int int_to_int(unsigned int k) {
+	return (k == 0 || k == 1 ? k : ((k % 2) + 10 * int_to_int(k / 2)));
+}
+
 void ipwout(iy, ip)
 int iy;                          /* year */
 int ip;                          /* period (sequential number beginning Oct 1) */
@@ -69,11 +73,20 @@ int ip;                          /* period (sequential number beginning Oct 1) *
 	float min;                    /* minimum value of variable */
 	int int_max;				  /* maximum value of the map */
 	char outfile[21];             /* output file name */
-//	float nbits;				  /* number of bits */
+	//	float nbits;				  /* number of bits */
 	int nbytes;
 
+
 	/* Calcualte some stats for the IPW image */
-//	nbits = 16;
+	//	if (nbits == 8) {
+	//		strcpy(hex, 0xFF);
+	//	} else if (nbits == 16) {
+	//		strcpy(hex, 0xFFFF);
+	//	} else {
+	//		printf("nbits can only be 8 or 16, sorry...\n");
+	//		exit();
+	//	}
+
 	nbytes = (int) ceil(nbits/8);
 
 	int_max = pow(2, nbits) - 1;
@@ -85,10 +98,12 @@ int ip;                          /* period (sequential number beginning Oct 1) *
 	min = gprec[0];
 	max = gprec[0];
 	for (i = 1; i < ngrid; i++) {
-		if (gprec[i] < min)
-			min = gprec[i];
-		if (gprec[i] > max)
-			max = gprec[i];
+		if (grid[l].use == 1) {
+			if (gprec[i] < min)
+				min = gprec[i];
+			if (gprec[i] > max)
+				max = gprec[i];
+		}
 	}
 	delta = (float) (int_max / (max - min));
 
@@ -173,11 +188,23 @@ int ip;                          /* period (sequential number beginning Oct 1) *
 	/* Image header and CNTL-L to separate header from data */
 	fprintf(fpipw,"!<header> image -1 $Revision: 1.5 $\f\n");
 
-	//	((x - b.float_min) * b.int_max)/(b.float_max - b.float_min))
-	for (i = 0; i < ngrid; i++) {
-		ival = (int) ((gprec[i] - min) * delta + 0.5);
-		fprintf(fpipw, "%c", (char) (ival & 0xFF));
+
+	if (nbits == 8) {
+		for (i = 0; i < ngrid; i++) {
+			ival = (int) ((gprec[i] - min) * delta + 0.5);
+			fprintf(fpipw, "%c", (char) (ival & 0xFF));
+		}
+	} else if (nbits == 16) {
+		for (i = 0; i < ngrid; i++) {
+			ival = (int) ((gprec[i] - min) * delta + 0.5);
+			fprintf(fpipw, "%i", int_to_int(ival));
+		}
+		printf("%i\n",i);
+	} else {
+		printf("nbits can only be 8 or 16, sorry...\n");
+		return(0);
 	}
+
 
 	/* Debug
    k = -1;
