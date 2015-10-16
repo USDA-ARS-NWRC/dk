@@ -384,6 +384,14 @@ void get_file_configuration(char configuration_filename[101])
 				N = atoi(value);
 			}
 		}
+		else if (strcmp(name, "nbits") == 0) {
+			if (strlen(value) == 0) {
+				nbits = 8;
+			}
+			else {
+				nbits = atoi(value);
+			}
+		}
 	}
 
 	fclose(fp_configuration_file);

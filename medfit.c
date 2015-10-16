@@ -11,7 +11,7 @@
  */
 
 #include <stdlib.h>
-#include "malloc.h"
+#include <malloc/malloc.h>
 #include <math.h>
 /* Debug
 #include <stdio.h>
