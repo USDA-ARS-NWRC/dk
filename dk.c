@@ -342,7 +342,6 @@ double mae;                      /* mean absolute error */
 float **map;                     /* mean areal prec/temp matrix */
 float **matrix();                /* float matrix space allocation function */
 int medfit();                    /* least absolute deviations regression function */
-int medfit_const();                    /* least absolute deviations regression function */
 float missing;                   /* missing data value (9999.8 internally) */
 int mo_end;                      /* ending month of OMS-csv input file */
 int mo_start;                    /* starting month of OMS-csv input file */
@@ -350,6 +349,7 @@ int mtper;                       /* maximum number of time periods in a year
                                     (8784 for hourly data; 366 for daily data;
                                     12 for monthly data; 1 for yearly data) */
 int N = -99;							 /* N closest stations to use in kriging */
+float nbits = 8;				 /* number of bits for IPW image */
 int netcdfout();				 /* NETCDF output function */
 int ngrid;                       /* number of grid cells */
 int ngriduse;                    /* number of grid cells used (non-missing) */

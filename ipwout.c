@@ -56,118 +56,130 @@ void ipwout(iy, ip)
 int iy;                          /* year */
 int ip;                          /* period (sequential number beginning Oct 1) */
 {
-   char buf[6];                  /* buffer for file name building */
-   float delta;                  /* number of image units per data unit
+	char buf[6];                  /* buffer for file name building */
+	float delta;                  /* number of image units per data unit
                                     (reciprocal of precision) */
-   FILE *fpipw;                  /* output file pointer */
-   int i;                        /* loop index */
-/* Debug
+	FILE *fpipw;                  /* output file pointer */
+	int i;                        /* loop index */
+	/* Debug
    int j, k;
    End debug */
-   int ival;                     /* int quantized data value */
-   float max;                    /* maximum value of variable */
-   float min;                    /* minimum value of variable */
-   char outfile[21];             /* output file name */
+	int ival;                     /* int quantized data value */
+	float max;                    /* maximum value of variable */
+	float min;                    /* minimum value of variable */
+	int int_max;				  /* maximum value of the map */
+	char outfile[21];             /* output file name */
+//	float nbits;				  /* number of bits */
+	int nbytes;
 
-   /* Find minimum and maximum values in image and compute delta */
+	/* Calcualte some stats for the IPW image */
+//	nbits = 16;
+	nbytes = (int) ceil(nbits/8);
 
-   min = gprec[0];
-   max = gprec[0];
-   for (i = 1; i < ngrid; i++) {
-      if (gprec[i] < min)
-         min = gprec[i];
-      if (gprec[i] > max)
-         max = gprec[i];
-   }
-   delta = (float) (255.0 / (max - min));
+	int_max = pow(2, nbits) - 1;
 
-   /* Build output file name and open file */
 
-   if (type == 1)
-      strcpy(outfile, "prc_");
-   else if (type == 2)
-      strcpy(outfile, "tmp_");
-   else if (type == 3)
-      strcpy(outfile, "swe_");
-   else
-      strcpy(outfile, "dat_");
-   sprintf(buf, "%04d_", iy);
-   strcat(outfile, buf);
-   sprintf(buf, "%04d", (ip+1));
-   strcat(outfile, buf);
-/* sprintf(buf, "%03d", dayfrac);
+
+	/* Find minimum and maximum values in image and compute delta */
+
+	min = gprec[0];
+	max = gprec[0];
+	for (i = 1; i < ngrid; i++) {
+		if (gprec[i] < min)
+			min = gprec[i];
+		if (gprec[i] > max)
+			max = gprec[i];
+	}
+	delta = (float) (int_max / (max - min));
+
+	/* Build output file name and open file */
+
+	if (type == 1)
+		strcpy(outfile, "prc_");
+	else if (type == 2)
+		strcpy(outfile, "tmp_");
+	else if (type == 3)
+		strcpy(outfile, "swe_");
+	else
+		strcpy(outfile, "dat_");
+	sprintf(buf, "%04d_", iy);
+	strcat(outfile, buf);
+	sprintf(buf, "%04d", (ip+1));
+	strcat(outfile, buf);
+	/* sprintf(buf, "%03d", dayfrac);
    strcat(outfile, buf); */
-   strcat(outfile, ".ipw");
-   if ((fpipw = fopen(outfile, "w")) == NULL) {
-      printf("\n\nError opening file %s.\n", outfile);
-      return;
-   }
+	strcat(outfile, ".ipw");
+	if ((fpipw = fopen(outfile, "w")) == NULL) {
+		printf("\n\nError opening file %s.\n", outfile);
+		return;
+	}
 
-   /* Write header information: */
+	/* Write header information: */
 
-   /* Basic image header */
+	/* Basic image header */
 
-   if (icoord == 3)
-      fprintf(fpipw, "%s\n%s\n%s%d\n%s%d\n%s\n%s",
-                     "!<header> basic_image_i -1", "byteorder = 3210",
-                     "nlines = ", grass.rows, "nsamps = ", grass.cols,
-                     "nbands = 1", "annot = ");
-   else if (icoord == 4)
-      fprintf(fpipw, "%s\n%s\n%s%d\n%s%d\n%s\n%s",
-                     "!<header> basic_image_i -1", "byteorder = 3210",
-                     "nlines = ", arc.rows, "nsamps = ", arc.cols,
-                     "nbands = 1", "annot = ");
-   if (type == 1)
-      fprintf(fpipw, "precipitation");
-   else if (type == 2)
-      fprintf(fpipw, "temperature");
-   else if (type == 3)
-      fprintf(fpipw, "snow water equivalent");
-   else
-      fprintf(fpipw, "general data type");
-   fprintf(fpipw, " for year %04d, period %04d\n", iy, ip+1);
-/* fprintf(fpipw, " for year %04d, day %03d.%03d\n", iy, id+1, dayfrac); */
+	if (icoord == 3)
+		fprintf(fpipw, "%s\n%s\n%s%d\n%s%d\n%s\n%s",
+				"!<header> basic_image_i -1", "byteorder = 3210",
+				"nlines = ", grass.rows, "nsamps = ", grass.cols,
+				"nbands = 1", "annot = ");
+	else if (icoord == 4)
+		fprintf(fpipw, "%s\n%s\n%s%d\n%s%d\n%s\n%s",
+				"!<header> basic_image_i -1", "byteorder = 3210",
+				"nlines = ", arc.rows, "nsamps = ", arc.cols,
+				"nbands = 1", "annot = ");
+	if (type == 1)
+		fprintf(fpipw, "precipitation");
+	else if (type == 2)
+		fprintf(fpipw, "temperature");
+	else if (type == 3)
+		fprintf(fpipw, "snow water equivalent");
+	else
+		fprintf(fpipw, "general data type");
+	fprintf(fpipw, " for year %04d, period %04d\n", iy, ip+1);
+	/* fprintf(fpipw, " for year %04d, day %03d.%03d\n", iy, id+1, dayfrac); */
 
-   fprintf(fpipw, "%s\n%s\n%s\n%s\n",
-                  "!<header> basic_image 0", "bytes = 1", "bits = 8",
-                  "history = created by DK program");
+	fprintf(fpipw, "%s\n%s%i\n%s%i\n%s\n",
+			"!<header> basic_image 0", "bytes = ", nbytes, "bits = ", (int) nbits,
+			"history = created by DK program");
 
-   /* Geo header */
+	/* Geo header */
 
-   if (icoord == 3)
-      fprintf(fpipw, "%s\n%s%f\n%s%f\n%s%f\n%s%f\n%s\n%s\n",
-                     "!<header> geo 0", "bline = ",
-                     (grass.north - 0.5 * grass.nsres),
-                     "bsamp = ", (grass.west + 0.5 * grass.ewres), "dline = ",
-                     -grass.nsres, "dsamp = ", grass.ewres, "units = meters",
-                     "coord_sys_ID = UTM");
-   else if (icoord == 4)
-      fprintf(fpipw, "%s\n%s%f\n%s%f\n%s%f\n%s%f\n%s\n%s\n",
-                     "!<header> geo 0", "bline = ",
-                     (arc.yll + ((double) arc.rows - 0.5) * arc.cell),
-                     "bsamp = ", (arc.xll + 0.5 * arc.cell), "dline = ",
-                     -arc.cell, "dsamp = ", arc.cell, "units = meters",
-                     "coord_sys_ID = UTM");
+	if (icoord == 3)
+		fprintf(fpipw, "%s\n%s%f\n%s%f\n%s%f\n%s%f\n%s\n%s\n",
+				"!<header> geo 0", "bline = ",
+				(grass.north - 0.5 * grass.nsres),
+				"bsamp = ", (grass.west + 0.5 * grass.ewres), "dline = ",
+				-grass.nsres, "dsamp = ", grass.ewres, "units = meters",
+				"coord_sys_ID = UTM");
+	else if (icoord == 4)
+		fprintf(fpipw, "%s\n%s%f\n%s%f\n%s%f\n%s%f\n%s\n%s\n",
+				"!<header> geo 0", "bline = ",
+				(arc.yll + ((double) arc.rows - 0.5) * arc.cell),
+				"bsamp = ", (arc.xll + 0.5 * arc.cell), "dline = ",
+				-arc.cell, "dsamp = ", arc.cell, "units = meters",
+				"coord_sys_ID = UTM");
 
-   /* Linear quantization header */
+	/* Linear quantization header */
 
-   fprintf(fpipw, "!<header> lq 0\nunits = ");
-   if (type == 1 || type == 3)
-      fprintf(fpipw, "mm\nmap = 0 %7.2f\nmap = 255 %7.2f\n", min, max);
-   else if (type == 2)
-      fprintf(fpipw, "C\nmap = 0 %6.2f\nmap = 255 %6.2f\n", min, max);
-   else
-      fprintf(fpipw, "unknown\nmap = 0 %6.2f\nmap = 255 %6.2f\n", min, max);
+	fprintf(fpipw, "!<header> lq 0\nunits = ");
+	if (type == 1 || type == 3)
+		fprintf(fpipw, "mm\nmap = 0 %7.2f\nmap = %i %7.2f\n", min, int_max, max);
+	else if (type == 2)
+		fprintf(fpipw, "C\nmap = 0 %6.2f\nmap = %i %6.2f\n", min, int_max, max);
+	else
+		fprintf(fpipw, "unknown\nmap = 0 %6.2f\nmap = %i %6.2f\n", min, int_max, max);
 
-   /* Image header and CNTL-L to separate header from data */
-   fprintf(fpipw,"!<header> image -1 $Revision: 1.5 $\f\n");
+	/* Image header and CNTL-L to separate header from data */
+	fprintf(fpipw,"!<header> image -1 $Revision: 1.5 $\f\n");
 
-   for (i = 0; i < ngrid; i++) {
-      ival = (int) ((gprec[i] - min) * delta + 0.5);
-      fprintf(fpipw, "%c", (char) (ival & 0xFF));
-   }
+	//	((x - b.float_min) * b.int_max)/(b.float_max - b.float_min))
+	for (i = 0; i < ngrid; i++) {
+		ival = (int) ((gprec[i] - min) * delta + 0.5);
+		fprintf(fpipw, "%c", (char) (ival & 0xFF));
+	}
 
-/* Debug
+	/* Debug
    k = -1;
    for (i = 0; i < arc.rows; i++) {
       for (j = 0; j < arc.cols; j++) {
@@ -178,5 +190,5 @@ int ip;                          /* period (sequential number beginning Oct 1) *
    }
    End debug */
 
-   fclose(fpipw);
+	fclose(fpipw);
 }

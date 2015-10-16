@@ -113,7 +113,6 @@ extern double mae;               /* mean absolute error */
 extern float **map;              /* mean areal prec/temp matrix */
 extern float **matrix();         /* float matrix space allocation function */
 extern int medfit();             /* least absolute deviations regression function */
-extern int medfit_const();             /* least absolute deviations regression function */
 extern float missing;            /* missing data code
                                     (= 99.99 for prec, = 999 for temp) */
 extern int mo_end;               /* ending month of OMS-csv input file */
@@ -121,6 +120,7 @@ extern int mo_start;             /* starting month of OMS-csv input file */
 extern int mtper;                /* maximum number of time periods in a year
                                     (8784 for hourly data; 366 for daily data;
                                     12 for monthly data; 1 for yearly data) */
+extern float nbits;				 /* number of bits for IPW image */
 extern int netcdfout();			 /* NETCDF output function */
 extern int ngrid;                /* number of grid cells */
 extern int ngriduse;             /* number of grid cells used (non-missing) */
@@ -145,6 +145,7 @@ extern int roundVal;			 /* number of decimal place to round to 10^roundVal */
 extern double se;                /* standard error */
 extern float **snolin;           /* snowline */
 extern int sreg();               /* simple linear regression function */
+extern int sreg_const();               /* simple linear regression function */
 extern struct {
    char id[26];                  /* station identifier */
    float elev;                   /* elevation (thousands) */

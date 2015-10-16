@@ -20,12 +20,15 @@
 #include "dk_m.h"
 #include "dk_x.h"
 
+#define ABS(a) ((a) >= 0 ? (a) : -(a))      /* absolute value operator */
+
 void period1()
 {
 	int i, j, jj, k, m, n, nn;    /* loop indexes */
 	float interp();               /* accumulated precip interpolation function */
 	float intval[MSTA];           /* interpolated accumulated precip value */
-//	float def = 1.06;			/* default slope of line */
+	double def;			/* default slope of line */
+	def = 2.0;
 
 	for (i = 0; i < nsta; i++)
 		intval[i] = -1;
@@ -181,8 +184,7 @@ if (m == 8 && year[k] == 69) {
 				if (irmeth == 2)
 					ret = medfit(x, y, &b0dum, &b1dum, &mae, n+1);
 				if (ret == 0) {
-					if ((type == 1 && b1dum < 0.0)
-							|| (type == 2 && b1dum > 0.0)) {
+					if ((type == 1 && b1dum < 0.0) || (type == 2 && b1dum > 0.0)) {
 						b0[m][k] = b1[m][k] = 0;
 						if (irmeth == 1)
 							r = se = t = 0;
@@ -193,6 +195,13 @@ if (m == 8 && year[k] == 69) {
 						b0[m][k] = (float) b0dum;
 						b1[m][k] = (float) b1dum;
 					}
+
+//					if (ABS(b1[m][k]) <= def){
+//						ret = sreg_const(x, y, &b0dum, def, &r, &se, &t, n+1);
+//						b0[m][k] = (float) b0dum;
+//						b1[m][k] = (float) def;
+//					}
+
 					if (ireg == 1) {
 						if (irmeth == 1)
 							fprintf(fpout, "\n%6d%11.4f%11.4f%9.3f%9.4f%9.3f%5d",
