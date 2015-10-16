@@ -98,7 +98,7 @@ int ip;                          /* period (sequential number beginning Oct 1) *
 	min = gprec[0];
 	max = gprec[0];
 	for (i = 1; i < ngrid; i++) {
-		if (grid[l].use == 1) {
+		if (grid[i].use == 1) {
 			if (gprec[i] < min)
 				min = gprec[i];
 			if (gprec[i] > max)
