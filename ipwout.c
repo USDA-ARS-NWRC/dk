@@ -95,8 +95,8 @@ int ip;                          /* period (sequential number beginning Oct 1) *
 
 	/* Find minimum and maximum values in image and compute delta */
 
-	min = gprec[0];
-	max = gprec[0];
+	min = 100000000;
+	max = -100000000;
 	for (i = 1; i < ngrid; i++) {
 		if (grid[i].use == 1) {
 			if (gprec[i] < min)
