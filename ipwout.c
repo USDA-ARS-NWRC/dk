@@ -197,7 +197,7 @@ int ip;                          /* period (sequential number beginning Oct 1) *
 	} else if (nbits == 16) {
 		for (i = 0; i < ngrid; i++) {
 			ival = (int) ((gprec[i] - min) * delta + 0.5);
-			fprintf(fpipw, "%i", int_to_int(ival));
+			fprintf(fpipw, "%u", (short) (ival & 0xffff));
 		}
 		printf("%i\n",i);
 	} else {
