@@ -9,7 +9,7 @@
  *    and removing dayfrac
  */
 
-#include "malloc.h"
+#include <malloc/malloc.h>
 #include <stdio.h>
 #include <string.h>
 

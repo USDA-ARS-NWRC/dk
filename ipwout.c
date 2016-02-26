@@ -200,9 +200,6 @@ int ip;                          /* period (sequential number beginning Oct 1) *
 			fprintf(fpipw, "%u", (short) (ival & 0xffff));
 		}
 		printf("%i\n",i);
-	} else {
-		printf("nbits can only be 8 or 16, sorry...\n");
-		return(0);
 	}
 
 
