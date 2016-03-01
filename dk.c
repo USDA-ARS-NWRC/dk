@@ -758,6 +758,7 @@ printf("\nMAP for period %d year %d = %8.4f\n", j+1, year[k], map[j][k]);
 			if (N < 0)
 				N = nsta;
 
+			double w[nsta+1];
 			#pragma omp parallel shared(nsta, ad, dgrid, elevations, grid, N) private(i, j, w)
 			{
 				#pragma omp for
@@ -765,14 +766,11 @@ printf("\nMAP for period %d year %d = %8.4f\n", j+1, year[k], map[j][k]);
 
 					if (grid[i].use == 1) {
 
-						w = krige(i, nsta, ad, dgrid, elevations, N);
+						krige(i, nsta, ad, dgrid, elevations, w);
 
-//						#pragma omp critical
-//						{
 						for (j = 0; j < nsta; j++){
 							wall[i][j] = (float) w[j];
 						}
-//						}
 					}
 				}
 			}
