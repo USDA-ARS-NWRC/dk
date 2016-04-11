@@ -235,7 +235,7 @@ int j;
 	if ((retval = nc_inq_varid(*ncid, "time", &varid)))
 		ERR(retval);
 
-	for (p = 0; p < j; p++) {    /* build time step vector */
+	for (p = 0; p <= j; p++) {    /* build time step vector */
 		ts[p] = p;
 	}
 
